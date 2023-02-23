@@ -2,10 +2,10 @@ import * as Oceanic from "oceanic.js";
 import {Event} from "../structures/structure/Event";
 import {CommandManager} from "../structures/managers/CommandManager";
 
-export default class MessageCreate extends Event {
+export default class InteractionCreate extends Event {
     constructor() {
         super({
-            name: "messageCreate",
+            name: "interactionCreate",
         });
     }
 

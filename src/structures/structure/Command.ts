@@ -6,7 +6,7 @@ export type TypeCommand = {
     description: string;
     options?: Array<Oceanic.ApplicationCommandOptions>;
     type: Oceanic.ApplicationCommandTypes;
-    run<T>(): Promise<any> 
+    run<T>(ctx: T): Promise<any> 
 }
 
 export class Command {
@@ -24,5 +24,5 @@ export class Command {
         this.type = type;
     }
 
-    async run(event: Oceanic.CommandInteraction | Oceanic.Message): Promise<any>{}
+    async run(): Promise<any>{}
 }

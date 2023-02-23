@@ -22,3 +22,6 @@ export const client = new Oceanic.Client({
         ]
     }
 }) as TypeClient;
+
+client.setMaxListeners(Infinity);
+client.connect();

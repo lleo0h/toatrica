@@ -11,7 +11,7 @@ type CollectorManagerOptions = {
 }
 
 class _CollectorManager {
-    private client: Oceanic.Client & TypeClient;
+    private client: TypeClient;
     public events: Map<keyof Oceanic.ClientEvents, Array<{
         identifier: string;
         run<T>(events: T | void): Promise<T | void>;

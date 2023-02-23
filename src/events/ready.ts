@@ -1,5 +1,6 @@
 import * as Oceanic from "oceanic.js";
-import {Event, CommandManager} from "../structures";
+import {Event} from "../structures/structure/Event";
+import {CommandManager} from "../structures/managers/CommandManager";
 
 export default class Ready extends Event {
     constructor() {
@@ -18,9 +19,8 @@ export default class Ready extends Event {
                 type: command[1].type
             });
         }
-        client.application.bulkEditGlobalCommands(registerSlashBulk);
-        
-        console.log("Loadded slash commands");
+
+        await client.application.bulkEditGlobalCommands(registerSlashBulk).then(() => console.log("Loadded slash commands"));
         console.log(`${client.user.username}#${client.user.discriminator} (${client.user.id}) is logged.`);
     }
 }

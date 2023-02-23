@@ -1,3 +1,3 @@
-import {client} from "./structures";
-client.setMaxListeners(Infinity);
-client.connect();
+import "./structures/structure/Client";
+import "./structures/managers/CollectorManager";
+import "./structures/managers/CommandManager";
