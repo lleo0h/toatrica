@@ -1,4 +1,5 @@
-import {Command, TypeCommandContext} from "../structures/structure/Command";
+import { CommandInteraction, Message } from "oceanic.js";
+import {Command, Context} from "../structures/structure/Command";
 
 export default class Test extends Command {
     constructor() {
@@ -10,7 +11,7 @@ export default class Test extends Command {
         });
     }
 
-    async run(ctx: TypeCommandContext) {
-        ctx.send("Hello World", {ends: true});
+    async run(ctx: Context) {
+        const a = await ctx.send("test", {ends: true})!;
     }
 }

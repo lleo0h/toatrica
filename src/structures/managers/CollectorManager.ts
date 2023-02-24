@@ -7,7 +7,7 @@ type CollectorManagerOptions = {
     event: keyof Oceanic.ClientEvents;
     identifier: string;
     once?: boolean;
-    run(...events: any): Promise<any>;
+    run<T>(events: T | void): Promise<T | void>;
 }
 
 class _CollectorManager {
