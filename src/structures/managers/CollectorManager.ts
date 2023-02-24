@@ -1,7 +1,7 @@
 import * as Oceanic from "oceanic.js";
 import fs from "fs";
-import {client} from "../structure/Client";
-import {TypeClient, TypeEvent} from "../types/types";
+import {client, TypeClient} from "../structure/Client";
+import {Event} from "../structure/Event";
 
 type CollectorManagerOptions = {
     event: keyof Oceanic.ClientEvents;
@@ -26,7 +26,7 @@ class _CollectorManager {
     private async loader() {
         for (const file of fs.readdirSync(`${__dirname}/../../events`)) {
             const event = await import(`../../events/${file}`)
-            const Event = new event.default as TypeEvent;
+            const Event = new event.default as Event;
             const {name, once, run} = Event;
     
             if (Event.once) this.set({

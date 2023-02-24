@@ -2,7 +2,7 @@ import * as Oceanic from "oceanic.js";
 import fs from "fs";
 import {Buffer} from 'node:buffer';
 import {settings} from "../../settings";
-import {TypeCommand, TypeComponentsReply} from "../types/types";
+import {Command, TypeComponentsSend} from "../structure/Command";
 
 class Context {
     public guild: Oceanic.Guild;
@@ -14,14 +14,14 @@ class Context {
         this.args = [];
         this.response = ctx;
 
-        if (ctx instanceof Oceanic.Message) this.args = ctx.content.split(" ");
+        if (ctx instanceof Oceanic.Message) this.args = ctx.content.split(" ").slice(1);
         else {
             if (ctx.data?.options == undefined) return;
             for (const arg of ctx.data.options.raw as Oceanic.InteractionOptionsWithValue[]) this.args.push(arg.value);
         }
     }
 
-    public async send(content: string | TypeComponentsReply, components?: TypeComponentsReply) {
+    public send(content: string | TypeComponentsSend, components?: TypeComponentsSend) {
         const _components_values: {
             files: {name: string; contents: Buffer}[];
             components: Oceanic.MessageActionRow[];
@@ -78,8 +78,8 @@ class Context {
 }
 
 class _CommandManager {
-    public commands: Map<string, Omit<TypeCommand, "name">>
-    public aliases: Map<string, Omit<TypeCommand, "name" | "type">>
+    public commands: Map<string, Omit<Command, "name">>
+    public aliases: Map<string, Omit<Command, "name" | "type">>
 
     constructor() {
         this.commands = new Map();
@@ -90,7 +90,7 @@ class _CommandManager {
     private async loader() {
         for (const file of fs.readdirSync(`${__dirname}/../../commands`)) {
             const command = await import(`../../commands/${file}`);
-            const {name, aliases, description, type, options, run} = new command.default as TypeCommand;
+            const {name, aliases, description, type, options, run} = new command.default as Command;
 
             this.commands.set(name, {aliases, description, type, options, run});
 
@@ -114,6 +114,7 @@ class _CommandManager {
             const command = this.commands.get(name) || this.aliases.get(name);
 
             await ctx.channel?.sendTyping();
+
             if (command) command.run(new Context(ctx));
         }
         else {

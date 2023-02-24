@@ -1,14 +1,31 @@
 import * as Oceanic from "oceanic.js";
-import {TypeCommand, TypeCommandContext} from "../types/types";
+
+export type TypeComponentsSend = {
+    ends?: boolean;
+    flags?: number;
+    embeds?: Array<Oceanic.Embed>;
+    components?: Array<Oceanic.ButtonComponent>;
+    files?: Array<{
+        name: string;
+        buffer: Buffer;
+    }>;  
+};
+
+export type TypeCommandContext = {
+    guild: Oceanic.Guild;
+    args: Array<string | boolean | number>;
+    response: Oceanic.CommandInteraction | Oceanic.Message;
+    send(content: string | TypeComponentsSend, components?: TypeComponentsSend): void
+}
 
 export class Command {
     public name: string;
     public aliases?: Array<string>;
     public description: string;
-    public options?: Array<Oceanic.ApplicationCommandOptionBase>;
+    public options?: Array<Oceanic.ApplicationCommandOptions>;
     public type: Oceanic.ApplicationCommandTypes;
 
-    constructor({name, aliases, description, options, type}: Omit<TypeCommand, "run">) {
+    constructor({name, aliases, description, options, type}: Omit<Command, "run">) {
         this.name = name;
         this.aliases = aliases;
         this.description = description;
@@ -16,5 +33,5 @@ export class Command {
         this.type = type;
     }
 
-    async run(context: TypeCommandContext): Promise<any>{}
+    async run<T>(ctx: TypeCommandContext): Promise<any>{}
 }

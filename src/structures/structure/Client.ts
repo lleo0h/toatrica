@@ -1,6 +1,14 @@
 import * as Oceanic from "oceanic.js";
-import {TypeClient} from "../types/types";
 import "dotenv/config";
+
+export type TypeClient = Oceanic.Client & {
+    _events: {
+        [key in keyof Oceanic.ClientEvents]?: {
+            listener: Function;
+        }
+    },
+    _eventsCount: Number;
+}
 
 const Intents = Oceanic.Constants.Intents;
 
