@@ -9,9 +9,11 @@ export default class InteractionCreate extends Event {
         });
     }
 
-    async run(message: Oceanic.Message) {
-        CommandManager.run(message).catch(err => {
-            console.log(err);
-        });
+    async run(interaction: Oceanic.CommandInteraction) {
+        if (interaction instanceof Oceanic.Interaction) {
+            CommandManager.run(interaction).catch(err => {
+                console.log(err);
+            });
+        }
     }
 }

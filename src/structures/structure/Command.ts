@@ -1,13 +1,5 @@
 import * as Oceanic from "oceanic.js";
-
-export type TypeCommand = {
-    name: string;
-    aliases?: Array<string>;
-    description: string;
-    options?: Array<Oceanic.ApplicationCommandOptions>;
-    type: Oceanic.ApplicationCommandTypes;
-    run<T>(ctx: T): Promise<any> 
-}
+import {TypeCommand, TypeCommandContext} from "../types/types";
 
 export class Command {
     public name: string;
@@ -24,5 +16,5 @@ export class Command {
         this.type = type;
     }
 
-    async run(): Promise<any>{}
+    async run(context: TypeCommandContext): Promise<any>{}
 }

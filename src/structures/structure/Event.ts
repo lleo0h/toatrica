@@ -1,10 +1,5 @@
 import * as Oceanic from "oceanic.js";
-
-export type TypeEvent = {
-    name: keyof Oceanic.ClientEvents;
-    once?: boolean;
-    run<T>(event: T): Promise<any>;
-}
+import {TypeEvent} from "../types/types";
 
 export class Event {
     public name: keyof Oceanic.ClientEvents;

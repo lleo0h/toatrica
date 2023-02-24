@@ -1,16 +1,8 @@
 import * as Oceanic from "oceanic.js";
+import {TypeClient} from "../types/types";
 import "dotenv/config";
 
 const Intents = Oceanic.Constants.Intents;
-
-export type TypeClient = Oceanic.Client & {
-    _events: {
-        [key in keyof Oceanic.ClientEvents]?: {
-            listener: Function;
-        }
-    },
-    _eventsCount: Number;
-}
 
 export const client = new Oceanic.Client({
     auth: `Bot ${process.env.BOT_TOKEN}`,
@@ -22,6 +14,3 @@ export const client = new Oceanic.Client({
         ]
     }
 }) as TypeClient;
-
-client.setMaxListeners(Infinity);
-client.connect();

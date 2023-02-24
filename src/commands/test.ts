@@ -1,5 +1,7 @@
 import {Command} from "../structures/structure/Command";
-
+import {TypeCommandContext} from "../structures/types/types";
+import fs from "fs";
+import path from "path";
 export default class Test extends Command {
     constructor() {
         super({
@@ -10,7 +12,38 @@ export default class Test extends Command {
         });
     }
 
-    async run() {
-        console.log("test");
+    async run(ctx: TypeCommandContext) {
+        ctx.send("test", {components: [
+            {
+                label: "test",
+                customID: "test2",
+                style: 2,
+                type: 2
+            },
+            {
+                label: "test",
+                customID: "test4",
+                style: 2,
+                type: 2
+            },
+            {
+                label: "test",
+                customID: "test3",
+                style: 2,
+                type: 2
+            },
+            {
+                label: "test",
+                customID: "test5",
+                style: 2,
+                type: 2
+            },
+            {
+                label: "test",
+                customID: "test6",
+                style: 2,
+                type: 2
+            },
+        ]})
     }
 }

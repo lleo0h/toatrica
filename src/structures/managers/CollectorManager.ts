@@ -1,7 +1,7 @@
 import * as Oceanic from "oceanic.js";
 import fs from "fs";
-import {client, TypeClient} from "../structure/Client";
-import {TypeEvent} from "../structure/Event";
+import {client} from "../structure/Client";
+import {TypeClient, TypeEvent} from "../types/types";
 
 type CollectorManagerOptions = {
     event: keyof Oceanic.ClientEvents;
@@ -15,7 +15,7 @@ class _CollectorManager {
     public events: Map<keyof Oceanic.ClientEvents, Array<{
         identifier: string;
         run<T>(events: T | void): Promise<T | void>;
-    }>>
+    }>>;
 
     constructor() {
         this.client = client;
