@@ -14,7 +14,7 @@ export type TypeContextSend = {
 export class Command {
     public name: string;
     public aliases?: Array<string>;
-    public description: string;
+    public description?: string;
     public options?: Array<Oceanic.ApplicationCommandOptions>;
     public type: Oceanic.ApplicationCommandTypes;
     public disableSlash?: boolean
@@ -32,6 +32,7 @@ export class Command {
 }
 
 export class Context {
+    public author: Oceanic.User;
     public guild: Oceanic.Guild;
     public args: Array<string | boolean | number>;
     public response: Oceanic.CommandInteraction | Oceanic.Message
@@ -41,8 +42,12 @@ export class Context {
         this.args = [];
         this.response = ctx;
 
-        if (ctx instanceof Oceanic.Message) this.args = ctx.content.split(" ").slice(1);
+        if (ctx instanceof Oceanic.Message) {
+            this.author = ctx.author;
+            this.args = ctx.content.split(" ").slice(1);
+        }
         else {
+            this.author = ctx.user;
             if (ctx.data?.options == undefined) return;
             for (const arg of ctx.data.options.raw as Oceanic.InteractionOptionsWithValue[]) this.args.push(arg.value);
         }

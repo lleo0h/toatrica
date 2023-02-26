@@ -1,4 +1,6 @@
+import * as Oceanic from "oceanic.js";
 import {Command, Context} from "../structures/structure/Command";
+import {CollectorManager} from "../structures/managers/CollectorManager";
 
 export default class Test extends Command {
     constructor() {
@@ -11,6 +13,14 @@ export default class Test extends Command {
     }
 
     async run(ctx: Context) {
-
+        CollectorManager.set({
+            event: "interactionCreate",
+            identifier: "collector",
+            async run(interaction: Oceanic.ComponentInteraction) {
+                if (interaction instanceof Oceanic.ComponentInteraction) {
+                    console.log(interaction);
+                }
+            }
+        })
     }
 }

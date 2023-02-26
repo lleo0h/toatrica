@@ -15,7 +15,7 @@ export default class Ready extends Event {
             if (!command[1].disableSlash) {
                 registerSlashBulk.push({
                     name: command[0],
-                    description: command[1].description,
+                    description: command[1].description!,
                     options: command[1].options,
                     type: command[1].type
                 });
