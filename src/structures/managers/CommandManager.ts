@@ -16,9 +16,9 @@ class _CommandManager {
     private async loader() {
         for (const file of fs.readdirSync(`${__dirname}/../../commands`)) {
             const command = await import(`../../commands/${file}`);
-            const {name, aliases, description, type, options, run} = new command.default as Command;
+            const {name, aliases, description, type, options, disableSlash, run} = new command.default as Command;
 
-            this.commands.set(name, {aliases, description, type, options, run});
+            this.commands.set(name, {aliases, description, type, options, disableSlash, run});
 
             if (aliases) {
                 for (const alias of aliases) {

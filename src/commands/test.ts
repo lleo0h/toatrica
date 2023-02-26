@@ -1,4 +1,3 @@
-import { CommandInteraction, Message } from "oceanic.js";
 import {Command, Context} from "../structures/structure/Command";
 
 export default class Test extends Command {
@@ -12,6 +11,6 @@ export default class Test extends Command {
     }
 
     async run(ctx: Context) {
-        const a = await ctx.send("test", {ends: true})!;
+
     }
 }

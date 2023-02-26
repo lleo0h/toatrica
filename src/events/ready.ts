@@ -12,12 +12,14 @@ export default class Ready extends Event {
     async run(client: Oceanic.Client) {
         const registerSlashBulk: Oceanic.CreateApplicationCommandOptions[] = [];
         for (const command of CommandManager.commands) {
-            registerSlashBulk.push({
-                name: command[0],
-                description: command[1].description,
-                options: command[1].options,
-                type: command[1].type
-            });
+            if (!command[1].disableSlash) {
+                registerSlashBulk.push({
+                    name: command[0],
+                    description: command[1].description,
+                    options: command[1].options,
+                    type: command[1].type
+                });
+            }
         }
 
         await client.application.bulkEditGlobalCommands(registerSlashBulk).then(() => console.log("Loadded slash commands"));
