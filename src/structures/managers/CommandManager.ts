@@ -4,8 +4,8 @@ import {settings} from "../../settings";
 import {Command, Context} from "../structure/Command";
 
 class _CommandManager {
-    public commands: Map<string, Omit<Command, "name">>
-    public aliases: Map<string, Omit<Command, "name" | "type">>
+    public commands: Map<string, Omit<Command, "name">>;
+    public aliases: Map<string, Omit<Command, "name" | "type">>;
 
     constructor() {
         this.commands = new Map();

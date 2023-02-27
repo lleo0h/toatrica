@@ -6,15 +6,12 @@ import {Event} from "../structure/Event";
 type CollectorManagerOptions = {
     identifier: string;
     once?: boolean;
-    run<T>(events: any): Promise<T | void>;
+    run(...events: any): Promise<any>;
 }
 
 class _CollectorManager {
     private client: TypeClient;
-    public events: Map<keyof Oceanic.ClientEvents, Array<{
-        identifier: string;
-        run<T>(events: T | void): Promise<T | void>;
-    }>>;
+    public events: Map<keyof Oceanic.ClientEvents, Array<CollectorManagerOptions>>;
 
     constructor() {
         this.client = client;
