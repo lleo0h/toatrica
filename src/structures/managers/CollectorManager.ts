@@ -4,7 +4,6 @@ import {client, TypeClient} from "../structure/Client";
 import {Event} from "../structure/Event";
 
 type CollectorManagerOptions = {
-    event: keyof Oceanic.ClientEvents;
     identifier: string;
     once?: boolean;
     run<T>(events: any): Promise<T | void>;
@@ -29,14 +28,12 @@ class _CollectorManager {
             const Event = new event.default as Event;
             const {name, once, run} = Event;
     
-            if (Event.once) this.set({
-                event: name,
+            if (Event.once) this.set(name, {
                 identifier: name,
                 once,
                 run
             });
-            else this.set({
-                event: name,
+            else this.set(name, {
                 identifier: name,
                 run
             });
@@ -45,7 +42,7 @@ class _CollectorManager {
         console.log("Loadded events");
     }
 
-    public set({event, identifier, once, run}: CollectorManagerOptions) {
+    public set(event: keyof Oceanic.ClientEvents, {identifier, once, run}: CollectorManagerOptions) {
         if (this.events.has(event)) {
             const array = this.events.get(event)!;
             if (array.find(index => index.identifier == identifier)) return;
@@ -76,6 +73,23 @@ class _CollectorManager {
                 });
             }
         }
+    }
+
+    public remove({event, identifier}: Omit<CollectorManagerOptions, "run"> & {event: keyof Oceanic.ClientEvents}) {
+        const _identifier = this.events.get(event)!;
+        const _notDeleteEvent: Omit<CollectorManagerOptions, "event">[] = [];
+        
+        for (const i of _identifier) {
+            if (i.identifier != identifier) {
+                const {identifier, run} = i;
+                _notDeleteEvent.push({
+                    identifier,
+                    run
+                });
+            }
+        }
+
+        this.events.set(event, _notDeleteEvent);
     }
 }
 

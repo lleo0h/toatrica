@@ -35,7 +35,7 @@ export class Context {
     public author: Oceanic.User;
     public guild: Oceanic.Guild;
     public args: Array<string | boolean | number>;
-    public response: Oceanic.CommandInteraction | Oceanic.Message
+    public response: Oceanic.CommandInteraction | Oceanic.Message;
 
     constructor(ctx: Oceanic.CommandInteraction | Oceanic.Message) {
         this.guild = ctx.guild!;
@@ -101,6 +101,7 @@ export class Context {
         if (components?.ends && this.response instanceof Oceanic.CommandInteraction) {
             result.flags = components?.flags;
             this.response.createMessage(result);
+            return this.response;
         } else {
             if (this.response instanceof Oceanic.Message) result.messageReference = {messageID: this.response.id}
             return this.response.channel!.createMessage(result);

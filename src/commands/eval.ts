@@ -1,6 +1,5 @@
-import {Command, Context} from "../structures/structure/Command";
 import util from "util"; 
-import {CollectorManager} from "../structures/managers/CollectorManager";
+import {Command, Context} from "../structures/structure/Command";
 
 export default class Eval extends Command {
     constructor() {
@@ -19,7 +18,7 @@ export default class Eval extends Command {
             const result = eval(code);
             
             if (result instanceof Promise) await result.catch((e) => {
-                ctx.send(`Promise Error\`\`\`js\n${e}\`\`\``);
+                ctx.send(`\`\`\`js\n${e}\`\`\``);
             });
 
             ctx.send(`\`\`\`js\n${util.inspect(result, {depth: 0})}\`\`\``);

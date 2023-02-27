@@ -13,14 +13,20 @@ export default class Test extends Command {
     }
 
     async run(ctx: Context) {
-        CollectorManager.set({
-            event: "interactionCreate",
-            identifier: "collector",
-            async run(interaction: Oceanic.ComponentInteraction) {
-                if (interaction instanceof Oceanic.ComponentInteraction) {
-                    console.log(interaction);
-                }
+        ctx.send("Collector adicionado.", {ends: true, components: [
+            {
+                customID: ctx.response.id,
+                style: 2,
+                type: 2,
+                label: "collector"
             }
-        })
+        ]});
+
+        CollectorManager.set("interactionCreate", {identifier: ctx.response.id, async run(interaction: Oceanic.ComponentInteraction) {
+            if (ctx.author.id != interaction.user.id) return;
+            if (interaction.data.customID != ctx.response.id) return;
+
+            interaction.channel!.createMessage({content: "test"});
+        }});
     }
 }
