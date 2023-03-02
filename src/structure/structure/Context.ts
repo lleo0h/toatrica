@@ -1,6 +1,6 @@
 import * as Oceanic from "oceanic.js";
 
-export type TypeContextSend = {
+export type SendOptions = {
     ends?: boolean;
     flags?: number;
     embeds?: Array<Oceanic.Embed>;
@@ -10,26 +10,6 @@ export type TypeContextSend = {
         buffer: Buffer;
     }>;  
 };
-
-export class Command {
-    public name: string;
-    public aliases?: Array<string>;
-    public description?: string;
-    public options?: Array<Oceanic.ApplicationCommandOptions>;
-    public type: Oceanic.ApplicationCommandTypes;
-    public disableSlash?: boolean
-
-    constructor({name, aliases, description, options, type, disableSlash}: Omit<Command, "run">) {
-        this.name = name;
-        this.aliases = aliases;
-        this.description = description;
-        this.options = options;
-        this.type = type;
-        this.disableSlash = disableSlash;
-    }
-
-    async run(ctx: Context): Promise<any>{}
-}
 
 export class Context {
     public author: Oceanic.User;
@@ -53,7 +33,7 @@ export class Context {
         }
     }
 
-    public async send(content: string | TypeContextSend, components?: TypeContextSend): Promise<Oceanic.CommandInteraction | Oceanic.Message | undefined> {
+    public async send(content: string | SendOptions, components?: SendOptions): Promise<Oceanic.CommandInteraction | Oceanic.Message | undefined> {
         const _components_values: {
             files: {name: string; contents: Buffer}[];
             components: Oceanic.MessageActionRow[];

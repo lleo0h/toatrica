@@ -1,13 +1,13 @@
 {
-  "name": "toatrica",
+  "name": "toatrica-bot",
   "main": "src/main.ts",
   "author": "Leonardo Araujo",
-  "type": "commonjs",
+  "type": "module",
   "devDependencies": {
+    "@types/node": "^18.14.3",
     "typescript": "^4.9.5"
   },
   "dependencies": {
-    "@types/node": "^18.14.0",
     "dotenv": "^16.0.3",
     "oceanic.js": "^1.5.0"
   }

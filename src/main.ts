@@ -1,6 +1,4 @@
-import {client} from "./structures/structure/Client";
-import "./structures/managers/CommandManager";
-import "./structures/managers/CollectorManager";
+import {Client} from "./structure/structure/Client.js";
+import "dotenv/config";
 
-client.setMaxListeners(Infinity);
-client.connect();
+await new Client(`Bot ${process.env.BOT_TOKEN}`).init();

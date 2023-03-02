@@ -1,9 +1,11 @@
 import * as Oceanic from "oceanic.js";
 import fs from "fs";
-import {settings} from "../../settings";
-import {Command, Context} from "../structure/Command";
+import {Command} from "../structure/Command.js";
+import {Context} from "../structure/Context.js";
 
-class _CommandManager {
+const prefix = "t/";
+
+export class CommandManager {
     public commands: Map<string, Omit<Command, "name">>;
     public aliases: Map<string, Omit<Command, "name" | "type">>;
 
@@ -13,8 +15,10 @@ class _CommandManager {
         this.loader();
     }
 
-    private async loader() {
-        for (const file of fs.readdirSync(`${__dirname}/../../commands`)) {
+    public async loader(dir?: string) {
+        if (dir == undefined) return;
+
+        for (const file of fs.readdirSync(dir)) {
             const command = await import(`../../commands/${file}`);
             const {name, aliases, description, type, options, disableSlash, run} = new command.default as Command;
 
@@ -28,15 +32,16 @@ class _CommandManager {
         }
 
         console.log("Loadded commands");
+        return this;
     }
 
     public async run(ctx: Oceanic.CommandInteraction | Oceanic.Message) {
         if (ctx instanceof Oceanic.Message) {
             if (ctx.channel?.type == undefined) return;
             if (ctx.channel!.type == 1) return;
-            if (!ctx.content.startsWith(settings.client.prefix)) return;
+            if (!ctx.content.startsWith(prefix)) return;
 
-            const name = ctx.content.slice(settings.client.prefix.length).split(" ")[0]
+            const name = ctx.content.slice(prefix.length).split(" ")[0]
             const command = this.commands.get(name) || this.aliases.get(name);
 
             if (command) {
@@ -50,5 +55,3 @@ class _CommandManager {
         }
     }
 }
-
-export const CommandManager = new _CommandManager();

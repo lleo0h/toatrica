@@ -1,6 +1,5 @@
-import * as Oceanic from "oceanic.js";
-import {Command, Context} from "../structures/structure/Command";
-import {CollectorManager} from "../structures/managers/CollectorManager";
+import {Command} from "../structure/structure/Command.js";
+import {Context} from "../structure/structure/Context.js";
 
 export default class Test extends Command {
     constructor() {
@@ -13,20 +12,6 @@ export default class Test extends Command {
     }
 
     async run(ctx: Context) {
-        ctx.send("Collector adicionado.", {ends: true, components: [
-            {
-                customID: ctx.response.id,
-                style: 2,
-                type: 2,
-                label: "collector"
-            }
-        ]});
-
-        CollectorManager.set("interactionCreate", {identifier: ctx.response.id, async run(interaction: Oceanic.ComponentInteraction) {
-            if (ctx.author.id != interaction.user.id) return;
-            if (interaction.data.customID != ctx.response.id) return;
-
-            interaction.channel!.createMessage({content: "test"});
-        }});
+        ctx.send("Send message!");
     }
 }

@@ -1,5 +1,6 @@
 import util from "util"; 
-import {Command, Context} from "../structures/structure/Command";
+import {Command} from "../structure/structure/Command.js";
+import {Context} from "../structure/structure/Context.js";
 
 export default class Eval extends Command {
     constructor() {
@@ -13,6 +14,7 @@ export default class Eval extends Command {
 
     async run(ctx: Context) {
         if (ctx.author.id != "468191831759388682") return;
+        
         try {
             const code = ctx.args.join(" ");
             const result = eval(code);

@@ -1,27 +1,25 @@
 import * as Oceanic from "oceanic.js";
 import fs from "fs";
-import {client, TypeClient} from "../structure/Client";
-import {Event} from "../structure/Event";
+import {Event} from "../structure/Event.js";
+import {Client} from "../structure/Client.js";
 
-type CollectorManagerOptions = {
+interface CollectorManagerOptions extends Omit<Event, "name">{
     identifier: string;
-    once?: boolean;
-    run(...events: any): Promise<any>;
 }
 
-class _CollectorManager {
-    private client: TypeClient;
-    public events: Map<keyof Oceanic.ClientEvents, Array<CollectorManagerOptions>>;
+export class CollectorManager {
+    public events = new Map<keyof Oceanic.ClientEvents, CollectorManagerOptions[]>();
+    private client: Client;
 
-    constructor() {
+    constructor(client: Client) {
         this.client = client;
-        this.events = new Map();
-        this.loader();
     }
 
-    private async loader() {
-        for (const file of fs.readdirSync(`${__dirname}/../../events`)) {
-            const event = await import(`../../events/${file}`)
+    public async loader(dir?: string) {
+        if (dir == undefined) return;
+
+        for (const file of fs.readdirSync(dir)) {
+            const event = await import(`${dir}/${file}`)
             const Event = new event.default as Event;
             const {name, once, run} = Event;
     
@@ -37,6 +35,7 @@ class _CollectorManager {
         }
 
         console.log("Loadded events");
+        return this;
     }
 
     public set(event: keyof Oceanic.ClientEvents, {identifier, once, run}: CollectorManagerOptions) {
@@ -54,7 +53,7 @@ class _CollectorManager {
             run
         }]);
 
-        if (!this.client._events[event]) {
+        if (!this.client._events || !this.client._events[event]) {
             if (once) {
                 this.client.once(event, (..._this) => {
                     for (const _event of this.events.get(event)!) {
@@ -72,10 +71,12 @@ class _CollectorManager {
         }
     }
 
-    public remove({event, identifier}: Omit<CollectorManagerOptions, "run"> & {event: keyof Oceanic.ClientEvents}) {
-        const _identifier = this.events.get(event)!;
-        const _notDeleteEvent: Omit<CollectorManagerOptions, "event">[] = [];
-        
+    public remove(event: keyof Oceanic.ClientEvents, {identifier}: Omit<CollectorManagerOptions, "run">) {
+        const _identifier = this.events.get(event);
+        const _notDeleteEvent: CollectorManagerOptions[] = [];
+
+        if (_identifier == undefined) return;
+
         for (const i of _identifier) {
             if (i.identifier != identifier) {
                 const {identifier, run} = i;
@@ -89,5 +90,3 @@ class _CollectorManager {
         this.events.set(event, _notDeleteEvent);
     }
 }
-
-export const CollectorManager = new _CollectorManager();
