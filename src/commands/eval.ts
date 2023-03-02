@@ -12,9 +12,9 @@ export default class Eval extends Command {
         });
     }
 
-    async run(ctx: Context) {
+    async run(ctx: Context<[]>) {
         if (ctx.author.id != "468191831759388682") return;
-        
+
         try {
             const code = ctx.args.join(" ");
             const result = eval(code);

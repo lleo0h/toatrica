@@ -18,5 +18,5 @@ export class Command {
         this.disableSlash = disableSlash;
     }
 
-    async run(ctx: Context): Promise<any>{};
+    async run(ctx: Context<any>): Promise<any>{};
 }

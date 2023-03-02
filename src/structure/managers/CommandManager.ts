@@ -2,16 +2,19 @@ import * as Oceanic from "oceanic.js";
 import fs from "fs";
 import {Command} from "../structure/Command.js";
 import {Context} from "../structure/Context.js";
+import {Client} from "../structure/Client.js";
 
 const prefix = "t/";
 
 export class CommandManager {
     public commands: Map<string, Omit<Command, "name">>;
     public aliases: Map<string, Omit<Command, "name" | "type">>;
+    private client: Client;
 
-    constructor() {
+    constructor(client: Client) {
         this.commands = new Map();
         this.aliases = new Map();
+        this.client = client;
         this.loader();
     }
 
@@ -43,15 +46,71 @@ export class CommandManager {
 
             const name = ctx.content.slice(prefix.length).split(" ")[0]
             const command = this.commands.get(name) || this.aliases.get(name);
+            const context = new Context(ctx);
 
             if (command) {
+                const argument = this.argumenthandler(command, context.args);
+                
+                if (argument._argumentBroken.length) {
+                    ctx.channel.createMessage({content: argument._argumentBroken[0].error});
+                    return;
+                }
+                
                 await ctx.channel?.sendTyping();
-                command.run(new Context(ctx));
+                context.args = argument._arguments;
+                command.run(context);
             }
         }
         else {
             const command = this.commands.get(ctx.data.name);
-            if (command) command.run(new Context(ctx));
+            const context = new Context(ctx);
+            if (command) {
+                context.args = this.argumenthandler(command, context.args)._arguments;
+                command.run(context);
+            }
+        }
+    }
+
+    private argumenthandler(command: Omit<Command, "name">, argument: any[]) {
+        let count = 0;
+        const _arguments: any[] = [];
+        const _argumentBroken: {
+            value: string;
+            type: string;
+            error: string;
+        }[] = [];
+
+        for (const args of command.options!) {
+            switch (args.type) {
+                case 3: {
+                    if (typeof argument[count] != "string") {
+                        _argumentBroken.push({
+                            value: argument[count],
+                            type: "String",
+                            error: "A motivo não foi definido."
+                        });
+                    }
+                    _arguments.push(argument[count]);
+                    break;
+                }
+                case 6: {
+                    const user = this.client.users.get(argument[count]?.replace(/[<@>]/g, ""));
+                    if (user == undefined) {
+                        _argumentBroken.push({
+                            value: argument[count],
+                            type: "User",
+                            error: "O usuário não foi definido."
+                        });
+                    }
+                    _arguments.push(user);
+                    break;
+                }
+            }
+            count++;
+        }
+        return {
+            _argumentBroken,
+            _arguments
         }
     }
 }

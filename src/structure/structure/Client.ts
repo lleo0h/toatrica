@@ -9,7 +9,7 @@ const __dir = path.dirname(url.fileURLToPath(import.meta.url+"../../../"));
 
 export class Client extends Oceanic.Client {
     public collector: CollectorManager = new CollectorManager(this);
-    public command: CommandManager = new CommandManager();
+    public command: CommandManager = new CommandManager(this);
     public _eventsCount?: number;
     public _events?: {
         [key in keyof Oceanic.ClientEvents]?: { listener: Function }

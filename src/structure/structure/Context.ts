@@ -11,20 +11,19 @@ export type SendOptions = {
     }>;  
 };
 
-export class Context {
+export class Context<T extends any[]> {
     public author: Oceanic.User;
     public guild: Oceanic.Guild;
-    public args: Array<string | boolean | number>;
+    public args: T = [] as unknown as T; 
     public response: Oceanic.CommandInteraction | Oceanic.Message;
 
     constructor(ctx: Oceanic.CommandInteraction | Oceanic.Message) {
         this.guild = ctx.guild!;
-        this.args = [];
         this.response = ctx;
 
         if (ctx instanceof Oceanic.Message) {
             this.author = ctx.author;
-            this.args = ctx.content.split(" ").slice(1);
+            for (const arg of ctx.content.split(" ").slice(1)) this.args.push(arg);
         }
         else {
             this.author = ctx.user;
