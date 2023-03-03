@@ -62,7 +62,7 @@ export class Context<T extends any[]> {
                     _components_values.components.push({
                         type: 1,
                         components: []  
-                    })
+                    });
                 }
                 
                 _components_values.components[index].components.push(component);

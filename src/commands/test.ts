@@ -10,23 +10,18 @@ export default class Test extends Command {
             description: "Test command SLASH and PREFIX of Toatrica bot.",
             options: [
                 {
-                    name: "user",
+                    name: "boolean",
                     description: "Add user.",
-                    type: Oceanic.ApplicationCommandOptionTypes.USER,
-                    required: true
+                    required: true,
+                    type: Oceanic.ApplicationCommandOptionTypes.BOOLEAN,
+                    argument: "BOOLEAN"
                 },
-                {
-                    name: "text",
-                    description: "Add text.",
-                    type: Oceanic.ApplicationCommandOptionTypes.STRING,
-                    required: true
-                }
             ],
             type: 1
         });
     }
 
-    async run(ctx: Context<[Oceanic.User, string]>) {
-        ctx.send(`User: ${ctx.args[0].username} | Reason: ${ctx.args[1]}`, {ends: true});
+    async run(ctx: Context<[boolean]>) {
+        console.log(ctx.args)
     }
 }

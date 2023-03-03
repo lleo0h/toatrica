@@ -1,11 +1,15 @@
 import * as Oceanic from "oceanic.js";
 import {Context} from "./Context.js";
 
+type CommandOptions = Oceanic.ApplicationCommandOptions & {
+    argument: "MEMBER" | "USER" | "BOOLEAN" | "STRING" | "REASON" | "NUMBER" | "DATE" | "CHANNEL";
+}
+
 export class Command {
     public name: string;
     public description?: string;   
     public aliases?: string[];
-    public options?: Oceanic.ApplicationCommandOptions[];
+    public options?: CommandOptions[];
     public type?: Oceanic.ApplicationCommandTypes;
     public disableSlash?: boolean;
 

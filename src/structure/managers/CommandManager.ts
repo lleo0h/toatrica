@@ -49,7 +49,7 @@ export class CommandManager {
             const context = new Context(ctx);
 
             if (command) {
-                const argument = this.argumenthandler(command, context.args);
+                const argument = this.argumenthandler(command, context.args, context.guild.id);
                 
                 if (argument._argumentBroken.length) {
                     ctx.channel.createMessage({content: argument._argumentBroken[0].error});
@@ -65,18 +65,17 @@ export class CommandManager {
             const command = this.commands.get(ctx.data.name);
             const context = new Context(ctx);
             if (command) {
-                context.args = this.argumenthandler(command, context.args)._arguments;
+                context.args = this.argumenthandler(command, context.args, context.guild.id)._arguments;
                 command.run(context);
             }
         }
     }
 
-    private argumenthandler(command: Omit<Command, "name">, argument: any[]) {
+    private argumenthandler(command: Omit<Command, "name">, argument: any[], guild: string) {
         let count = 0;
         const _arguments: any[] = [];
         const _argumentBroken: {
             value: string;
-            type: string;
             error: string;
         }[] = [];
 
@@ -84,22 +83,42 @@ export class CommandManager {
             switch (args.type) {
                 case 3: {
                     if (typeof argument[count] != "string") {
-                        _argumentBroken.push({
+                        if (args.required) _argumentBroken.push({
                             value: argument[count],
-                            type: "String",
-                            error: "A motivo não foi definido."
+                            error: `O ${args.argument == "REASON" ? "motivo" : "texto"} não foi definido.`
                         });
                     }
                     _arguments.push(argument[count]);
                     break;
                 }
-                case 6: {
-                    const user = this.client.users.get(argument[count]?.replace(/[<@>]/g, ""));
-                    if (user == undefined) {
-                        _argumentBroken.push({
+
+                case 5: {
+                    let _boolean: Boolean | undefined;
+                    if (argument[count] == "true") _boolean = true;
+                    else if (argument[count] == "false") _boolean = false;
+                    else if (typeof argument[count] == "boolean") _boolean = argument[count];
+
+                    if (typeof _boolean != "boolean") {
+                        if (args.required) _argumentBroken.push({
                             value: argument[count],
-                            type: "User",
-                            error: "O usuário não foi definido."
+                            error: `Você não escolheu entre verdadeiro & falso.`
+                        });
+                    }
+
+                    _arguments.push(_boolean);
+                    break;
+                }
+
+                case 6: {
+                    const id = argument[count]?.replace(/[<@>]/g, "");
+                    let user: Oceanic.User | Oceanic.Member | undefined;
+                    if (args.argument == "USER") user = this.client.users.get(id);
+                    else if (args.argument == "MEMBER") user = this.client.guilds.get(guild)?.members.get(id);
+                    
+                    if (user == undefined) {
+                        if (args.required) _argumentBroken.push({
+                            value: argument[count],
+                            error: `O ${args.argument == "USER" ? "usuário" : "membro"} não foi definido.`
                         });
                     }
                     _arguments.push(user);

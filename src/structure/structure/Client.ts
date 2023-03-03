@@ -22,9 +22,11 @@ export class Client extends Oceanic.Client {
                 intents: [
                     Intents.MESSAGE_CONTENT,
                     Intents.GUILDS,
-                    Intents.GUILD_MESSAGES
-                ]
-            }
+                    Intents.GUILD_MESSAGES,
+                    Intents.GUILD_MEMBERS
+                ],
+                getAllUsers: true
+            },
         });
     }
 
