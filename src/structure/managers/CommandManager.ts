@@ -76,79 +76,104 @@ export class CommandManager {
         const _argumentBroken: string[] = [];
         let count = 0;
 
-        for (const args of command.options!) {
+        if (command.options == undefined) {
+            return {
+                _argumentBroken,
+                _arguments: argument
+            }
+        }
+
+        for (const args of command.options) {
             const value = argument[count];
-            switch (args.type) {
-                case 3: {
-                    if (typeof value != "string") {
-                        if (args.required) {
-                            _argumentBroken.push(`O ${args.argument == "REASON" ? "motivo" : "texto"} não foi definido.`);
+            switch (args.argument) {
+                case "STRING": case "REASON": case "TIME": {
+                    if (typeof value != "string" && args.required) {
+                        const td = {
+                            STRING: "O texto não foi **definido**.",
+                            REASON: "O motivo não foi **definido**.",
+                            TIME: "O tempo não foi **definido**."
                         }
+                        _argumentBroken.push(td[args.argument]);
                     }
                     _arguments.push(value);
                     break;
                 }
 
-                case 5: {
-                    let _boolean: Boolean | undefined;
-                    if (value == "true") _boolean = true;
-                    else if (value == "false") _boolean = false;
-                    else if (typeof value == "boolean") _boolean = value;
-                    if (typeof _boolean != "boolean") {
-                        if (args.required) {
-                            _argumentBroken.push("Você não escolheu entre verdadeiro & falso.");
-                        }
+                case "BOOLEAN": {
+                    let boolean: Boolean | undefined;
+                    if (value == "true") boolean = true;
+                    else if (value == "false") boolean = false;
+                    else if (typeof value == "boolean") boolean = value;
+
+                    if (typeof boolean != "boolean" && args.required) {
+                        _argumentBroken.push("Você não escolheu entre **verdadeiro** ou **falso**.");
                     }
-                    _arguments.push(_boolean);
+                    _arguments.push(boolean);
                     break;
                 }
 
-                case 6: {
-                    const id = value?.replace(/[<@>]/g, "");
+                case "USER": case "MEMBER": {
                     let user: Oceanic.User | Oceanic.Member | undefined;
+                    const id = value?.replace(/[<@>]/g, "");
+
                     if (args.argument == "USER") user = this.client.users.get(id);
                     else if (args.argument == "MEMBER") user = this.client.guilds.get(guild)?.members.get(id);
+                    
                     if (id) {
                         if (user == undefined && args.required) {
-                            _argumentBroken.push(`O ${args.argument == "USER" ? "usuário" : "membro"} não foi encontrado.`);
+                            _argumentBroken.push(`O ${args.argument == "USER" ? "usuário" : "membro"} \`${value}\` não foi **encontrado**.`);
                         }
                     }
-                    else _argumentBroken.push(`O ${args.argument == "USER" ? "usuário" : "membro"} não foi definido.`);
-                    _arguments.push(user);
+                    else {
+                        _argumentBroken.push(`O ${args.argument == "USER" ? "usuário" : "membro"} não foi **definido**.`);
+                    }
+                    _arguments.push(user); //User and undefined value.
                     break;
                 }
 
-                case 7: {
+                case "CHANNEL_GUILD": case "CHANNEL_TEXT": {
                     let channel: Oceanic.Channel | Oceanic.TextChannel | undefined;
                     const id = value?.replace(/[<#>]/g, "");
 
                     if (id) {
                         if (args.argument == "CHANNEL_GUILD") channel = this.client.guilds.get(guild)?.channels.get(id);
                         else if (args.argument == "CHANNEL_TEXT") channel = this.client.getChannel(id);
-                        if (channel == undefined) _argumentBroken.push("O canal não foi encontrado.");
+                        if (channel == undefined && args.required) _argumentBroken.push("O canal não foi **encontrado**.");
                     }
-                    else _argumentBroken.push("O canal não foi definido.");
-                    _arguments.push(channel);
+                    else if (args.required) {
+                        _argumentBroken.push("O canal não foi **definido**.");
+                    }
+                    _arguments.push(channel); //Channel and undefined value.
                     break;
                 }
 
-                case 8: {
+                case "ROLE": {
                     let role: Oceanic.Role | undefined;
                     const id = value?.replace(/[<@&>]/g, "");
                     
                     if (id) {
                         role = this.client.guilds.get(guild)?.roles.get(id);
-                        if (role == undefined) {
-                            _argumentBroken.push("O cargo não foi encontrado.");
+                        if (role == undefined && args.required) {
+                            _argumentBroken.push("O cargo não foi **encontrado**.");
                         } 
                     }
-                    else _argumentBroken.push("O cargo não foi definido.");
-                    _arguments.push(role);
+                    else if (args.required) {
+                        _argumentBroken.push("O cargo não foi **definido**.");
+                    }
+                    _arguments.push(role); //Role and undefined value.
                     break;
                 }
+                
+                case "NUMBER": {
+                    if (value == undefined && args.required) _argumentBroken.push("O número não foi **definido**.")
+                    else if (isNaN(value) && args.required) _argumentBroken.push(`O valor \`${value}\` não é um número.`)
+                    _arguments.push(Number(value)); //Number and NaN value
+                }
             }
+
             count++;
         }
+
         return {
             _argumentBroken,
             _arguments
