@@ -10,19 +10,18 @@ export default class Test extends Command {
             description: "Test command SLASH and PREFIX of Toatrica bot.",
             options: [
                 {
-                    name: "channel",
+                    name: "role",
                     description: "Add user.",
                     required: true,
-                    type: Oceanic.ApplicationCommandOptionTypes.CHANNEL,
-                    argument: "CHANNEL_GUILD",
-                    channelTypes: [1]
+                    type: Oceanic.ApplicationCommandOptionTypes.ROLE,
+                    argument: "ROLE"
                 },
             ],
             type: 1
         });
     }
 
-    async run(ctx: Context<[Oceanic.Channel]>) {
-        console.log(ctx.args[0] instanceof Oceanic.VoiceChannel);
+    async run(ctx: Context<[Oceanic.Role]>) {
+        console.log(ctx.args[0]);
     }
 }

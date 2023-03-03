@@ -1,6 +1,6 @@
 import * as Oceanic from "oceanic.js";
 import fs from "fs";
-import {Command} from "../structure/Command.js";
+import {Command, Argument} from "../structure/Command.js";
 import {Context} from "../structure/Context.js";
 import {Client} from "../structure/Client.js";
 
@@ -52,7 +52,7 @@ export class CommandManager {
                 const argument = this.argumenthandler(command, context.args, context.guild.id);
                 
                 if (argument._argumentBroken.length) {
-                    ctx.channel.createMessage({content: argument._argumentBroken[0].error});
+                    ctx.channel.createMessage({content: argument._argumentBroken[0]});
                     return;
                 }
                 
@@ -72,22 +72,18 @@ export class CommandManager {
     }
 
     private argumenthandler(command: Omit<Command, "name">, argument: any[], guild: string) {
-        let count = 0;
         const _arguments: any[] = [];
-        const _argumentBroken: {
-            value: string;
-            error: string;
-        }[] = [];
+        const _argumentBroken: string[] = [];
+        let count = 0;
 
         for (const args of command.options!) {
             const value = argument[count];
             switch (args.type) {
                 case 3: {
                     if (typeof value != "string") {
-                        if (args.required) _argumentBroken.push({
-                            value,
-                            error: `O ${args.argument == "REASON" ? "motivo" : "texto"} não foi definido.`
-                        });
+                        if (args.required) {
+                            _argumentBroken.push(`O ${args.argument == "REASON" ? "motivo" : "texto"} não foi definido.`);
+                        }
                     }
                     _arguments.push(value);
                     break;
@@ -99,12 +95,10 @@ export class CommandManager {
                     else if (value == "false") _boolean = false;
                     else if (typeof value == "boolean") _boolean = value;
                     if (typeof _boolean != "boolean") {
-                        if (args.required) _argumentBroken.push({
-                            value,
-                            error: `Você não escolheu entre verdadeiro & falso.`
-                        });
+                        if (args.required) {
+                            _argumentBroken.push("Você não escolheu entre verdadeiro & falso.");
+                        }
                     }
-
                     _arguments.push(_boolean);
                     break;
                 }
@@ -115,18 +109,11 @@ export class CommandManager {
                     if (args.argument == "USER") user = this.client.users.get(id);
                     else if (args.argument == "MEMBER") user = this.client.guilds.get(guild)?.members.get(id);
                     if (id) {
-                        if (user == undefined) {
-                            if (args.required) _argumentBroken.push({
-                                value,
-                                error: `O ${args.argument == "USER" ? "usuário" : "membro"} não foi encontrado.`
-                            });
+                        if (user == undefined && args.required) {
+                            _argumentBroken.push(`O ${args.argument == "USER" ? "usuário" : "membro"} não foi encontrado.`);
                         }
                     }
-                    else  _argumentBroken.push({
-                        value,
-                        error: `O ${args.argument == "USER" ? "usuário" : "membro"} não foi definido.`
-                    });
-
+                    else _argumentBroken.push(`O ${args.argument == "USER" ? "usuário" : "membro"} não foi definido.`);
                     _arguments.push(user);
                     break;
                 }
@@ -138,17 +125,25 @@ export class CommandManager {
                     if (id) {
                         if (args.argument == "CHANNEL_GUILD") channel = this.client.guilds.get(guild)?.channels.get(id);
                         else if (args.argument == "CHANNEL_TEXT") channel = this.client.getChannel(id);
-                        if (args.channelTypes)
-                        if (channel == undefined) _argumentBroken.push({
-                            value,
-                            error: `O canal não foi encontrado.`
-                        });
+                        if (channel == undefined) _argumentBroken.push("O canal não foi encontrado.");
                     }
-                    else _argumentBroken.push({
-                        value,
-                        error: `O canal não foi definido.`
-                    });
-                    _arguments.push(channel)
+                    else _argumentBroken.push("O canal não foi definido.");
+                    _arguments.push(channel);
+                    break;
+                }
+
+                case 8: {
+                    let role: Oceanic.Role | undefined;
+                    const id = value?.replace(/[<@&>]/g, "");
+                    
+                    if (id) {
+                        role = this.client.guilds.get(guild)?.roles.get(id);
+                        if (role == undefined) {
+                            _argumentBroken.push("O cargo não foi encontrado.");
+                        } 
+                    }
+                    else _argumentBroken.push("O cargo não foi definido.");
+                    _arguments.push(role);
                     break;
                 }
             }
