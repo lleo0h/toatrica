@@ -2,7 +2,7 @@ import * as Oceanic from "oceanic.js";
 import {Context} from "./Context.js";
 
 type CommandOptions = Oceanic.ApplicationCommandOptions & {
-    argument: "MEMBER" | "USER" | "BOOLEAN" | "STRING" | "REASON" | "NUMBER" | "DATE" | "CHANNEL";
+    argument: "MEMBER" | "USER" | "BOOLEAN" | "STRING" | "REASON" | "NUMBER" | "DATE" | "CHANNEL_GUILD" | "CHANNEL_TEXT";
 }
 
 export class Command {

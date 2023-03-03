@@ -80,27 +80,27 @@ export class CommandManager {
         }[] = [];
 
         for (const args of command.options!) {
+            const value = argument[count];
             switch (args.type) {
                 case 3: {
-                    if (typeof argument[count] != "string") {
+                    if (typeof value != "string") {
                         if (args.required) _argumentBroken.push({
-                            value: argument[count],
+                            value,
                             error: `O ${args.argument == "REASON" ? "motivo" : "texto"} não foi definido.`
                         });
                     }
-                    _arguments.push(argument[count]);
+                    _arguments.push(value);
                     break;
                 }
 
                 case 5: {
                     let _boolean: Boolean | undefined;
-                    if (argument[count] == "true") _boolean = true;
-                    else if (argument[count] == "false") _boolean = false;
-                    else if (typeof argument[count] == "boolean") _boolean = argument[count];
-
+                    if (value == "true") _boolean = true;
+                    else if (value == "false") _boolean = false;
+                    else if (typeof value == "boolean") _boolean = value;
                     if (typeof _boolean != "boolean") {
                         if (args.required) _argumentBroken.push({
-                            value: argument[count],
+                            value,
                             error: `Você não escolheu entre verdadeiro & falso.`
                         });
                     }
@@ -110,18 +110,45 @@ export class CommandManager {
                 }
 
                 case 6: {
-                    const id = argument[count]?.replace(/[<@>]/g, "");
+                    const id = value?.replace(/[<@>]/g, "");
                     let user: Oceanic.User | Oceanic.Member | undefined;
                     if (args.argument == "USER") user = this.client.users.get(id);
                     else if (args.argument == "MEMBER") user = this.client.guilds.get(guild)?.members.get(id);
-                    
-                    if (user == undefined) {
-                        if (args.required) _argumentBroken.push({
-                            value: argument[count],
-                            error: `O ${args.argument == "USER" ? "usuário" : "membro"} não foi definido.`
+                    if (id) {
+                        if (user == undefined) {
+                            if (args.required) _argumentBroken.push({
+                                value,
+                                error: `O ${args.argument == "USER" ? "usuário" : "membro"} não foi encontrado.`
+                            });
+                        }
+                    }
+                    else  _argumentBroken.push({
+                        value,
+                        error: `O ${args.argument == "USER" ? "usuário" : "membro"} não foi definido.`
+                    });
+
+                    _arguments.push(user);
+                    break;
+                }
+
+                case 7: {
+                    let channel: Oceanic.Channel | Oceanic.TextChannel | undefined;
+                    const id = value?.replace(/[<#>]/g, "");
+
+                    if (id) {
+                        if (args.argument == "CHANNEL_GUILD") channel = this.client.guilds.get(guild)?.channels.get(id);
+                        else if (args.argument == "CHANNEL_TEXT") channel = this.client.getChannel(id);
+                        if (args.channelTypes)
+                        if (channel == undefined) _argumentBroken.push({
+                            value,
+                            error: `O canal não foi encontrado.`
                         });
                     }
-                    _arguments.push(user);
+                    else _argumentBroken.push({
+                        value,
+                        error: `O canal não foi definido.`
+                    });
+                    _arguments.push(channel)
                     break;
                 }
             }
