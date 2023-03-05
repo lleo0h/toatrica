@@ -21,7 +21,7 @@ export default class Ready extends Event {
             });
         }
 
-        await client.application.bulkEditGlobalCommands(registerSlashBulk).then(() => console.log("Loadded slash commands"));
+        client.application.bulkEditGlobalCommands(registerSlashBulk).then(() => console.log("Loadded slash commands"));
         console.log(`${client.user.username}#${client.user.discriminator} (${client.user.id}) is logged.`);
     }
 }

@@ -1,6 +1,6 @@
 import * as Oceanic from "oceanic.js";
 import fs from "fs";
-import {Argument, Command} from "../structure/Command.js";
+import {Command} from "../structure/Command.js";
 import {Context, Attachment, Response} from "../structure/Context.js";
 import {Client} from "../structure/Client.js";
 import {bufferAttachmentToURL} from "../../utils/bufferAttachmentToURL.js";
