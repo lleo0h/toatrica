@@ -5,19 +5,26 @@ export type SendOptions = {
     flags?: number;
     embeds?: Array<Oceanic.Embed>;
     components?: Array<Oceanic.ButtonComponent>;
-    files?: Array<{
-        name: string;
-        buffer: Buffer;
-    }>;  
+    files?: Array<Attachment>;
 };
+
+export type Response = Oceanic.CommandInteraction | Oceanic.Message;
+
+export type Attachment = {
+    filename: string;
+    url: string;
+    buffer: Buffer;
+    type: string;
+}
 
 export class Context<T extends any[]> {
     public author: Oceanic.User;
     public guild: Oceanic.Guild;
     public args: T = [] as unknown as T; 
-    public response: Oceanic.CommandInteraction | Oceanic.Message;
+    public response: Response;
+    public attachments: Attachment[] = [];
 
-    constructor(ctx: Oceanic.CommandInteraction | Oceanic.Message) {
+    constructor(ctx: Response) {
         this.guild = ctx.guild!;
         this.response = ctx;
 
@@ -32,7 +39,7 @@ export class Context<T extends any[]> {
         }
     }
 
-    public async send(content: string | SendOptions, components?: SendOptions): Promise<Oceanic.CommandInteraction | Oceanic.Message | undefined> {
+    public async send(content: string | SendOptions, components?: SendOptions): Promise<Response | undefined> {
         const _components_values: {
             files: {name: string; contents: Buffer}[];
             components: Oceanic.MessageActionRow[];
@@ -48,7 +55,7 @@ export class Context<T extends any[]> {
         if (components?.files) {
             for (const file of components.files) {
                 _components_values.files.push({
-                    name: file.name,
+                    name: file.filename,
                     contents: file.buffer
                 });
             }

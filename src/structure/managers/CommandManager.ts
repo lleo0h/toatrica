@@ -1,8 +1,9 @@
 import * as Oceanic from "oceanic.js";
 import fs from "fs";
-import {Command, Argument} from "../structure/Command.js";
-import {Context} from "../structure/Context.js";
+import {Command} from "../structure/Command.js";
+import {Context, Attachment, Response} from "../structure/Context.js";
 import {Client} from "../structure/Client.js";
+import {bufferAttachmentToURL} from "../../utils/bufferAttachmentToURL.js";
 
 const prefix = "t/";
 
@@ -49,15 +50,16 @@ export class CommandManager {
             const context = new Context(ctx);
 
             if (command) {
-                const argument = this.argumenthandler(command, context.args, context.guild.id);
+                const argument = await this.argumenthandler(command, context.args, ctx);
                 
-                if (argument._argumentBroken.length) {
-                    ctx.channel.createMessage({content: argument._argumentBroken[0]});
+                if (argument._errors.length) {
+                    ctx.channel.createMessage({content: argument._errors[0]});
                     return;
                 }
                 
                 await ctx.channel?.sendTyping();
                 context.args = argument._arguments;
+                context.attachments = argument._attachments;
                 command.run(context);
             }
         }
@@ -65,20 +67,33 @@ export class CommandManager {
             const command = this.commands.get(ctx.data.name);
             const context = new Context(ctx);
             if (command) {
-                context.args = this.argumenthandler(command, context.args, context.guild.id)._arguments;
+                const argument = await this.argumenthandler(command, context.args, ctx);
+                context.args = argument._arguments;
+                context.attachments = argument._attachments;
                 command.run(context);
             }
         }
     }
 
-    private argumenthandler(command: Omit<Command, "name">, argument: any[], guild: string) {
+    private async argumenthandler(command: Omit<Command, "name">, argument: any[], ctx: Response) {
         const _arguments: any[] = [];
-        const _argumentBroken: string[] = [];
+        const _errors: string[] = [];
+        const _attachments: Attachment[] & undefined[] = [];
+
+        const files: Oceanic.Attachment[] = [];
+        if (ctx instanceof Oceanic.Message) {
+            for (const file of ctx.attachments) {
+                files.push(file[1]);
+            }
+        }
+
         let count = 0;
+        let countAttachment = 0;
 
         if (command.options == undefined) {
             return {
-                _argumentBroken,
+                _errors,
+                _attachments,
                 _arguments: argument
             }
         }
@@ -93,7 +108,7 @@ export class CommandManager {
                             REASON: "O motivo não foi **definido**.",
                             TIME: "O tempo não foi **definido**."
                         }
-                        _argumentBroken.push(td[args.argument]);
+                        _errors.push(td[args.argument]);
                     }
                     _arguments.push(value);
                     break;
@@ -106,7 +121,7 @@ export class CommandManager {
                     else if (typeof value == "boolean") boolean = value;
 
                     if (typeof boolean != "boolean" && args.required) {
-                        _argumentBroken.push("Você não escolheu entre **verdadeiro** ou **falso**.");
+                        _errors.push("Você não escolheu entre **verdadeiro** ou **falso**.");
                     }
                     _arguments.push(boolean);
                     break;
@@ -117,15 +132,15 @@ export class CommandManager {
                     const id = value?.replace(/[<@>]/g, "");
 
                     if (args.argument == "USER") user = this.client.users.get(id);
-                    else if (args.argument == "MEMBER") user = this.client.guilds.get(guild)?.members.get(id);
+                    else if (args.argument == "MEMBER") user = this.client.guilds.get(ctx.guild!.id)?.members.get(id);
                     
                     if (id) {
                         if (user == undefined && args.required) {
-                            _argumentBroken.push(`O ${args.argument == "USER" ? "usuário" : "membro"} \`${value}\` não foi **encontrado**.`);
+                            _errors.push(`O ${args.argument == "USER" ? "usuário" : "membro"} \`${value}\` não foi **encontrado**.`);
                         }
                     }
                     else {
-                        _argumentBroken.push(`O ${args.argument == "USER" ? "usuário" : "membro"} não foi **definido**.`);
+                        _errors.push(`O ${args.argument == "USER" ? "usuário" : "membro"} não foi **definido**.`);
                     }
                     _arguments.push(user); //User and undefined value.
                     break;
@@ -136,12 +151,12 @@ export class CommandManager {
                     const id = value?.replace(/[<#>]/g, "");
 
                     if (id) {
-                        if (args.argument == "CHANNEL_GUILD") channel = this.client.guilds.get(guild)?.channels.get(id);
+                        if (args.argument == "CHANNEL_GUILD") channel = this.client.guilds.get(ctx.guild!.id)?.channels.get(id);
                         else if (args.argument == "CHANNEL_TEXT") channel = this.client.getChannel(id);
-                        if (channel == undefined && args.required) _argumentBroken.push("O canal não foi **encontrado**.");
+                        if (channel == undefined && args.required) _errors.push("O canal não foi **encontrado**.");
                     }
                     else if (args.required) {
-                        _argumentBroken.push("O canal não foi **definido**.");
+                        _errors.push("O canal não foi **definido**.");
                     }
                     _arguments.push(channel); //Channel and undefined value.
                     break;
@@ -152,22 +167,41 @@ export class CommandManager {
                     const id = value?.replace(/[<@&>]/g, "");
                     
                     if (id) {
-                        role = this.client.guilds.get(guild)?.roles.get(id);
+                        role = this.client.guilds.get(ctx.guild!.id)?.roles.get(id);
                         if (role == undefined && args.required) {
-                            _argumentBroken.push("O cargo não foi **encontrado**.");
+                            _errors.push("O cargo não foi **encontrado**.");
                         } 
                     }
                     else if (args.required) {
-                        _argumentBroken.push("O cargo não foi **definido**.");
+                        _errors.push("O cargo não foi **definido**.");
                     }
                     _arguments.push(role); //Role and undefined value.
                     break;
                 }
                 
                 case "NUMBER": {
-                    if (value == undefined && args.required) _argumentBroken.push("O número não foi **definido**.")
-                    else if (isNaN(value) && args.required) _argumentBroken.push(`O valor \`${value}\` não é um número.`)
+                    if (value == undefined && args.required) _errors.push("O número não foi **definido**.");
+                    else if (isNaN(value) && args.required) _errors.push(`O valor \`${value}\` não é um número.`);
                     _arguments.push(Number(value)); //Number and NaN value
+                    break;
+                }
+
+                case "ATTACHMENT": {
+                    const file = files[countAttachment];
+                    if (args.required && file == undefined) {
+                        _errors.push("O arquivo não foi **definido**.");
+                    }
+
+                    else if (file) {
+                        _attachments.push(await bufferAttachmentToURL(file));
+                    }
+
+                    else if (!file) {
+                        _attachments.push(undefined);
+                    }
+
+                    countAttachment++;
+                    break;
                 }
             }
 
@@ -175,7 +209,8 @@ export class CommandManager {
         }
 
         return {
-            _argumentBroken,
+            _errors,
+            _attachments,
             _arguments
         }
     }
