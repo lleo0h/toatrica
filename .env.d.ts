@@ -1,7 +1,6 @@
 declare namespace NodeJS {
     export interface ProcessEnv {
         BOT_TOKEN: string;
-        DATABASE_URI: string;
     }
 }
 
