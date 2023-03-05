@@ -1,6 +1,6 @@
 import * as Oceanic from "oceanic.js";
 import fs from "fs";
-import {Command} from "../structure/Command.js";
+import {Argument, Command} from "../structure/Command.js";
 import {Context, Attachment, Response} from "../structure/Context.js";
 import {Client} from "../structure/Client.js";
 import {bufferAttachmentToURL} from "../../utils/bufferAttachmentToURL.js";
@@ -76,6 +76,7 @@ export class CommandManager {
     }
 
     private async argumenthandler(command: Omit<Command, "name">, argument: any[], ctx: Response) {
+        //The argument handler just return the value and it has definition error.
         const _arguments: any[] = [];
         const _errors: string[] = [];
         const _attachments: Attachment[] & undefined[] = [];
@@ -100,21 +101,21 @@ export class CommandManager {
 
         for (const args of command.options) {
             const value = argument[count];
-            switch (args.argument) {
-                case "STRING": case "REASON": case "TIME": {
+            switch (args.type) {
+                case 1: {
                     if (typeof value != "string" && args.required) {
                         const td = {
                             STRING: "O texto não foi **definido**.",
                             REASON: "O motivo não foi **definido**.",
                             TIME: "O tempo não foi **definido**."
                         }
-                        _errors.push(td[args.argument]);
+                        _errors.push(td[value as "STRING" | "REASON" | "TIME"]);
                     }
-                    _arguments.push(value);
+                    _arguments.push(value); //String or undefined value.
                     break;
                 }
 
-                case "BOOLEAN": {
+                case 5: {
                     let boolean: Boolean | undefined;
                     if (value == "true") boolean = true;
                     else if (value == "false") boolean = false;
@@ -123,11 +124,11 @@ export class CommandManager {
                     if (typeof boolean != "boolean" && args.required) {
                         _errors.push("Você não escolheu entre **verdadeiro** ou **falso**.");
                     }
-                    _arguments.push(boolean);
+                    _arguments.push(boolean); //Boolean or undefined value.
                     break;
                 }
 
-                case "USER": case "MEMBER": {
+                case 6: {
                     let user: Oceanic.User | Oceanic.Member | undefined;
                     const id = value?.replace(/[<@>]/g, "");
 
@@ -142,11 +143,11 @@ export class CommandManager {
                     else {
                         _errors.push(`O ${args.argument == "USER" ? "usuário" : "membro"} não foi **definido**.`);
                     }
-                    _arguments.push(user); //User and undefined value.
+                    _arguments.push(user); //User or Member or undefined value.
                     break;
                 }
 
-                case "CHANNEL_GUILD": case "CHANNEL_TEXT": {
+                case 7: {
                     let channel: Oceanic.Channel | Oceanic.TextChannel | undefined;
                     const id = value?.replace(/[<#>]/g, "");
 
@@ -158,11 +159,11 @@ export class CommandManager {
                     else if (args.required) {
                         _errors.push("O canal não foi **definido**.");
                     }
-                    _arguments.push(channel); //Channel and undefined value.
+                    _arguments.push(channel); //ChannelGuild or ChannelText or undefined value.
                     break;
                 }
 
-                case "ROLE": {
+                case 8: {
                     let role: Oceanic.Role | undefined;
                     const id = value?.replace(/[<@&>]/g, "");
                     
@@ -175,30 +176,24 @@ export class CommandManager {
                     else if (args.required) {
                         _errors.push("O cargo não foi **definido**.");
                     }
-                    _arguments.push(role); //Role and undefined value.
+                    _arguments.push(role); //Role or undefined value.
                     break;
                 }
                 
-                case "NUMBER": {
+                case 10: {
                     if (value == undefined && args.required) _errors.push("O número não foi **definido**.");
                     else if (isNaN(value) && args.required) _errors.push(`O valor \`${value}\` não é um número.`);
-                    _arguments.push(Number(value)); //Number and NaN value
+                    _arguments.push(Number(value)); //Number or NaN value.
                     break;
                 }
 
-                case "ATTACHMENT": {
+                case 11: { //Attachment Custom or undefined value.
                     const file = files[countAttachment];
                     if (args.required && file == undefined) {
                         _errors.push("O arquivo não foi **definido**.");
                     }
-
-                    else if (file) {
-                        _attachments.push(await bufferAttachmentToURL(file));
-                    }
-
-                    else if (!file) {
-                        _attachments.push(undefined);
-                    }
+                    else if (file) _attachments.push(await bufferAttachmentToURL(file));
+                    else if (!file) _attachments.push(undefined);
 
                     countAttachment++;
                     break;
