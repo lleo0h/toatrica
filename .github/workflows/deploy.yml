@@ -1,0 +1,39 @@
+name: Deploy
+on:
+  push:
+    branches:
+      - 'main'
+jobs:
+  deploy:
+    name: "Deploy to production"
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    steps:
+      - name: Setup ssh
+        run: |
+          mkdir -p ~/.ssh/
+          echo "$SSH_KEY" > ~/.ssh/key
+          chmod 600 ~/.ssh/key
+          cat >>~/.ssh/config << END
+          Host prod
+            HostName $SSH_HOST
+            User $SSH_USER
+            Port $SSH_PORT
+            IdentityFile ~/.ssh/key
+            StrictHostKeyChecking no
+          END
+        env:
+          SSH_USER: ${{ secrets.SSH_USER }}
+          SSH_KEY: ${{ secrets.SSH_KEY }}
+          SSH_HOST: ${{ secrets.SSH_HOST }}
+          SSH_PORT: ${{ secrets.SSH_PORT }}
+      - name: Stopping bot
+        run: ssh prod 'bash -i -c "pm2 stop toatrica-bot"'
+      - name: Cloning repository
+        run: ssh prod 'cd toatrica-bot && git fetch && git reset --hard origin/main'
+      - name: Install dependencies
+        run: ssh prod 'bash -i -c "cd toatrica-bot && npm ci"'
+      - name: Build app
+        run: ssh prod 'cd toatrica-bot && npm run build'
+      - name: Starting bot
+        run: ssh prod 'bash -i -c "pm2 start toatrica-bot"'
