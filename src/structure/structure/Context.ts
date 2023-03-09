@@ -1,4 +1,5 @@
 import * as Oceanic from "oceanic.js";
+import {CommandOptions} from "./Command.js";
 
 export type SendOptions = {
     ends?: boolean;
@@ -24,7 +25,7 @@ export class Context<T extends any[]> {
     public response: Response;
     public attachments: Attachment[] = [];
 
-    constructor(ctx: Response) {
+    constructor(ctx: Response, options?: CommandOptions[]) {
         this.guild = ctx.guild!;
         this.response = ctx;
 
@@ -35,7 +36,15 @@ export class Context<T extends any[]> {
         else {
             this.author = ctx.user;
             if (ctx.data?.options == undefined) return;
-            for (const arg of ctx.data.options.raw as Oceanic.InteractionOptionsWithValue[]) this.args.push(arg.value);
+            
+            if (options == undefined) return;
+            for (const args of options) {
+                const arg = ctx.data.options.raw.find(index => index.name == args.name) as Oceanic.InteractionOptionsWithValue;
+                if (arg) {
+                    this.args.push(arg.value);
+                }
+                else this.args.push(undefined);
+            }
         }
     }
 

@@ -65,8 +65,8 @@ export class CommandManager {
         }
         else {
             const command = this.commands.get(ctx.data.name);
-            const context = new Context(ctx);
             if (command) {
+                const context = new Context(ctx, command.options);
                 const argument = await this.argumenthandler(command, context.args, ctx);
                 context.args = argument._arguments;
                 context.attachments = argument._attachments;

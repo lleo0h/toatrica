@@ -11,8 +11,14 @@ export default class Test extends Command {
             type: 1,
             options: [
                 {
-                    name: "test",
-                    description: "test",
+                    name: "start",
+                    description: "Write text.",
+                    type: Oceanic.ApplicationCommandOptionTypes.STRING,
+                    argument: "STRING"
+                },
+                {
+                    name: "end",
+                    description: "Write text.",
                     type: Oceanic.ApplicationCommandOptionTypes.STRING,
                     argument: "STRING"
                 }
@@ -21,7 +27,6 @@ export default class Test extends Command {
     }
 
     async run(ctx: Context<[string]>) {
-        ctx.send("Test command.", {ends: true});
-        console.log(ctx.args)
+        ctx.send(`Test command. ${ctx.args.join(" ")}`, {ends: true});
     }
 }
