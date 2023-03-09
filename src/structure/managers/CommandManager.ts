@@ -102,7 +102,7 @@ export class CommandManager {
         for (const args of command.options) {
             const value = argument[count];
             switch (args.type) {
-                case 1: {
+                case 3: {
                     if (typeof value != "string" && args.required) {
                         const td = {
                             STRING: "O texto não foi **definido**.",
@@ -111,6 +111,7 @@ export class CommandManager {
                         }
                         _errors.push(td[value as "STRING" | "REASON" | "TIME"]);
                     }
+                    
                     _arguments.push(value); //String or undefined value.
                     break;
                 }

@@ -13,14 +13,15 @@ export default class Test extends Command {
                 {
                     name: "test",
                     description: "test",
-                    type: Oceanic.ApplicationCommandOptionTypes.ROLE,
-                    argument: "CHANNEL_GUILD"
+                    type: Oceanic.ApplicationCommandOptionTypes.STRING,
+                    argument: "STRING"
                 }
             ]
         });
     }
 
-    async run(ctx: Context<[]>) {
+    async run(ctx: Context<[string]>) {
         ctx.send("Test command.", {ends: true});
+        console.log(ctx.args)
     }
 }
