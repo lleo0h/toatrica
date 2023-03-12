@@ -1,6 +1,6 @@
 import * as Oceanic from "oceanic.js";
-import {Client} from "../structure/structure/Client.js";
-import {Event} from "../structure/structure/Event.js";
+import {Client} from "../structures/structure/Client.js";
+import {Event} from "../structures/structure/Event.js";
 
 export default class InteractionCreate extends Event {
     constructor() {

@@ -1,4 +1,4 @@
-import {Attachment} from "../structure/structure/Context.js";
+import {Attachment} from "../structures/structure/Context.js";
 import * as Oceanic from "oceanic.js";
 
 export async function bufferAttachmentToURL(attachment: Oceanic.Attachment): Promise<Attachment> {

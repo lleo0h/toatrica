@@ -1,5 +1,5 @@
-import {Command} from "../structure/structure/Command.js";
-import {Context} from "../structure/structure/Context.js";
+import {Command} from "../structures/structure/Command.js";
+import {Context} from "../structures/structure/Context.js";
 import * as Oceanic from "oceanic.js";
 
 export default class Test extends Command {
