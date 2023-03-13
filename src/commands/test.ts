@@ -1,6 +1,5 @@
 import {Command} from "../structures/structure/Command.js";
 import {Context} from "../structures/structure/Context.js";
-import { Embed } from "../structures/builders/Embed.js";
 
 export default class Test extends Command {
     constructor() {

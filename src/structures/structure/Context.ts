@@ -7,7 +7,7 @@ export type Attachment = {
     filename: string;
     url: string;
     buffer: Buffer;
-    type: string;
+    type: string | undefined;
 }
 
 export class Context<T extends any[]> {

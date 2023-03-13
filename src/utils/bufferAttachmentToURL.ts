@@ -16,7 +16,7 @@ export async function bufferAttachmentToURL(attachment: Oceanic.Attachment): Pro
     const buffer = Buffer.from(new Uint8Array(await response.arrayBuffer()));
 
     let count = 0;
-    let type = ".";
+    let type = undefined;
     for (const key of Object.keys(typeAttachments)) {
         const hex = buffer.toString("hex").slice(0, key.length) as keyof typeof typeAttachments;
         if (hex == key) type = typeAttachments[hex];
