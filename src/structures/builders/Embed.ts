@@ -30,7 +30,7 @@ export class Embed {
 
     public setImage(url: string, height?: number, width?: number) {
         this.image = {url, height, width}
-        return this
+        return this;
     }
 
     public setURL(url: string) {

@@ -14,14 +14,16 @@ export class Command {
     public options?: CommandOptions[];
     public type?: Oceanic.ApplicationCommandTypes;
     public disableSlash?: boolean;
+    public disablePrefix?: boolean;
 
-    constructor({name, aliases, description, options, type, disableSlash}: Omit<Command, "run">) {
+    constructor({name, aliases, description, options, type, disableSlash, disablePrefix}: Omit<Command, "run">) {
         this.name = name;
         this.aliases = aliases;
         this.description = description;
         this.options = options;
         this.type = type;
         this.disableSlash = disableSlash;
+        this.disablePrefix = disablePrefix;
     }
 
     async run(ctx: Context<any>): Promise<any>{};

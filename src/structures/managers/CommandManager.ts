@@ -8,8 +8,8 @@ import {bufferAttachmentToURL} from "../../utils/bufferAttachmentToURL.js";
 const prefix = "t/";
 
 export class CommandManager {
-    public commands: Map<string, Omit<Command, "name">>;
-    public aliases: Map<string, Omit<Command, "name" | "type">>;
+    public commands: Map<string, Command>;
+    public aliases: Map<string, Command>;
     private client: Client;
 
     constructor(client: Client) {
@@ -23,14 +23,14 @@ export class CommandManager {
         if (dir == undefined) return;
 
         for (const file of fs.readdirSync(dir)) {
-            const command = await import(`../../commands/${file}`);
-            const {name, aliases, description, type, options, disableSlash, run} = new command.default as Command;
+            const Command = await import(`../../commands/${file}`);
+            const command = new Command.default as Command;
 
-            this.commands.set(name, {aliases, description, type, options, disableSlash, run});
+            this.commands.set(command.name, command);
 
-            if (aliases) {
-                for (const alias of aliases) {
-                    this.aliases.set(alias, {description, run});
+            if (command.aliases) {
+                for (const alias of command.aliases) {
+                    this.aliases.set(alias, command);
                 }
             }
         }
@@ -48,8 +48,8 @@ export class CommandManager {
             const name = ctx.content.slice(prefix.length).split(" ")[0]
             const command = this.commands.get(name) || this.aliases.get(name);
             const context = new Context(ctx);
-
-            if (command) {
+            
+            if (command && !command.disablePrefix) {
                 const argument = await this.argumenthandler(command, context.args, ctx);
                 
                 if (argument._errors.length) {
