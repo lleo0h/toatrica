@@ -1,14 +1,6 @@
 import * as Oceanic from "oceanic.js";
 import {CommandOptions} from "./Command.js";
 
-export type SendOptions = {
-    ends?: boolean;
-    flags?: number;
-    embeds?: Array<Oceanic.Embed>;
-    components?: Array<Oceanic.ButtonComponent>;
-    files?: Array<Attachment>;
-};
-
 export type Response = Oceanic.CommandInteraction | Oceanic.Message;
 
 export type Attachment = {
@@ -48,58 +40,42 @@ export class Context<T extends any[]> {
         }
     }
 
-    public async send(content: string | SendOptions, components?: SendOptions): Promise<Response | undefined> {
-        const _components_values: {
-            files: {name: string; contents: Buffer}[];
-            components: Oceanic.MessageActionRow[];
-        } = {
-            files: [],
-            components: [{
-                type: 1,
-                components: []
-            }]
-        }
-
-        if (typeof content == "object") components = content;
-        if (components?.files) {
-            for (const file of components.files) {
-                _components_values.files.push({
-                    name: file.filename,
-                    contents: file.buffer
-                });
+    public async send(content: string | Oceanic.CreateMessageOptions): Promise<Oceanic.Message> {
+        if (typeof content == "object") {
+            const result: Oceanic.CreateMessageOptions = {
+                content: content?.content,
+                embeds: content?.embeds,
+                files: content?.files == undefined ? [] : content.files,
+                components: content?.components
             }
-        }
-        if (components?.components) {
-            let count = 0;
-            let index = 0;
-            for (const component of components.components) {
-                if (count >= 5) {
-                    index++;
-                    _components_values.components.push({
-                        type: 1,
-                        components: []  
-                    });
+    
+            if (this.response instanceof Oceanic.CommandInteraction) {
+                result.flags = content?.flags;
+    
+                if (this.response.acknowledged) {
+                    return this.response.createFollowup(result);
                 }
                 
-                _components_values.components[index].components.push(component);
-                count++;
+                this.response.createMessage(result);
+                return this.response.getOriginal();
+            }
+            else {
+                result.messageReference = {messageID: this.response.id}
+                return this.response.channel!.createMessage(result);
             }
         }
-
-        const result: Oceanic.CreateMessageOptions = {
-            content: typeof content == "string" ? content : undefined,
-            embeds: components?.embeds ? components?.embeds : undefined,
-            files: _components_values.files ? _components_values.files : undefined,
-            components: _components_values.components[0].components[0] != undefined ? _components_values.components : undefined
-        }
-
-        if (components?.ends && this.response instanceof Oceanic.CommandInteraction) {
-            result.flags = components?.flags;
-            this.response.createMessage(result);
-            return this.response;
-        } else {
-            if (this.response instanceof Oceanic.Message) result.messageReference = {messageID: this.response.id}
-            return this.response.channel!.createMessage(result);
+        else {
+            if (this.response instanceof Oceanic.CommandInteraction) {
+                if (this.response.acknowledged) {
+                    return this.response.createFollowup({content});
+                }
+                
+                this.response.createMessage({content});
+                return this.response.getOriginal();
+            }
+            else {
+                return this.response.channel!.createMessage({content});
+            }
         }
     }
 }

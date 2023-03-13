@@ -1,6 +1,6 @@
 import {Command} from "../structures/structure/Command.js";
 import {Context} from "../structures/structure/Context.js";
-import * as Oceanic from "oceanic.js";
+import { Embed } from "../structures/builders/Embed.js";
 
 export default class Test extends Command {
     constructor() {
@@ -8,25 +8,11 @@ export default class Test extends Command {
             name: "test",
             aliases: ["t"],
             description: "Test command SLASH and PREFIX of Toatrica bot.",
-            type: 1,
-            options: [
-                {
-                    name: "start",
-                    description: "Write text.",
-                    type: Oceanic.ApplicationCommandOptionTypes.STRING,
-                    argument: "STRING"
-                },
-                {
-                    name: "end",
-                    description: "Write text.",
-                    type: Oceanic.ApplicationCommandOptionTypes.STRING,
-                    argument: "STRING"
-                }
-            ]
+            type: 1
         });
     }
 
     async run(ctx: Context<[string]>) {
-        ctx.send(`Test command. ${ctx.args.join(" ")}`, {ends: true});
+        ctx.send({content: "Test command.", flags: 64});
     }
 }
