@@ -74,7 +74,7 @@ export class Context<T extends any[]> {
                 return this.response.getOriginal();
             }
             else {
-                return this.response.channel!.createMessage({content});
+                return this.response.channel!.createMessage({content, messageReference: {messageID: this.response.id}});
             }
         }
     }
