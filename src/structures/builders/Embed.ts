@@ -72,5 +72,3 @@ export class Embed {
         return this;
     }
 }
-
-new Embed();
