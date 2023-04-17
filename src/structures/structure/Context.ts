@@ -15,7 +15,7 @@ export class Context<T extends any[]> {
     public guild: Oceanic.Guild;
     public args: T = [] as unknown as T; 
     public response: Response;
-    public attachments: Attachment[] = [];
+    public attachments: (Attachment | undefined)[] = [];
 
     constructor(ctx: Response, options?: CommandOptions[]) {
         this.guild = ctx.guild!;

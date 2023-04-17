@@ -75,11 +75,11 @@ export class CommandManager {
         }
     }
 
-    private async argumenthandler(command: Command, argument: any[], ctx: Response) {
+    private async argumenthandler(command: Command, argument: string[], ctx: Response) {
         //The argument handler just return the value and it has definition error.
-        const _arguments: any[] = [];
+        const _arguments: unknown[] = [];
         const _errors: string[] = [];
-        const _attachments: Attachment[] & undefined[] = [];
+        const _attachments: (Attachment | undefined)[] = [];
 
         const files: Oceanic.Attachment[] = [];
         if (ctx instanceof Oceanic.Message) {
@@ -183,7 +183,7 @@ export class CommandManager {
                 
                 case 10: {
                     if (value == undefined && args.required) _errors.push("O número não foi **definido**.");
-                    else if (isNaN(value) && args.required) _errors.push(`O valor \`${value}\` não é um número.`);
+                    else if (isNaN(Number(value)) && args.required) _errors.push(`O valor \`${value}\` não é um número.`);
                     _arguments.push(Number(value)); //Number or NaN value.
                     break;
                 }
