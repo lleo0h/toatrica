@@ -23,7 +23,7 @@ export class Context<T extends any[]> {
 
         if (ctx instanceof Oceanic.Message) {
             this.author = ctx.author;
-            for (const arg of ctx.content.split(" ").slice(1)) this.args.push(arg);
+            this.args = ctx.content.split(" ").slice(1) as string[] as T;
         }
         else {
             this.author = ctx.user;

@@ -45,7 +45,7 @@ export class CommandManager {
             if (ctx.channel!.type == 1) return;
             if (!ctx.content.startsWith(prefix)) return;
 
-            const name = ctx.content.slice(prefix.length).split(" ")[0]
+            const name = ctx.content.slice(prefix.length).split(" ")[0];
             const command = this.commands.get(name) || this.aliases.get(name);
             const context = new Context(ctx);
             
@@ -75,7 +75,7 @@ export class CommandManager {
         }
     }
 
-    private async argumenthandler(command: Omit<Command, "name">, argument: any[], ctx: Response) {
+    private async argumenthandler(command: Command, argument: any[], ctx: Response) {
         //The argument handler just return the value and it has definition error.
         const _arguments: any[] = [];
         const _errors: string[] = [];
