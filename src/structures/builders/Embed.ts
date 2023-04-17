@@ -55,6 +55,7 @@ export class Embed {
 
     public setThumbnail(url: string) {
         this.thumbnail = {url}
+        return this;
     }
 
     public addField({name, value, inline}: Oceanic.EmbedField) {
