@@ -23,7 +23,29 @@ export class Context<T extends any[]> {
 
         if (ctx instanceof Oceanic.Message) {
             this.author = ctx.author;
-            this.args = ctx.content.split(" ").slice(1) as string[] as T;
+
+            if (options) {
+                let attachmentCount = 0;
+                let args = ctx.content.split(" ").slice(1);
+                const attachments = Object.values(ctx.attachments)[attachmentCount];
+                
+                for (let c = 0; c<options.length; c++) {
+                    if (options[c].argument == "ATTACHMENT") {
+                        this.args.push(attachments);
+                        args.unshift("");
+                        attachmentCount++;
+                    }
+                    else {
+                        this.args.push(args[c]);
+                    }
+                }
+
+                args = args.slice(attachmentCount-1+options.length);
+                this.args.push(...args);
+            }
+            else {
+                this.args = ctx.content.split(" ").slice(1) as string[] as T;
+            }
         }
         else {
             this.author = ctx.user;
@@ -38,6 +60,8 @@ export class Context<T extends any[]> {
                 else this.args.push(undefined);
             }
         }
+
+        console.log(this.args, "Context");
     }
 
     public async send(content: string | Oceanic.CreateMessageOptions): Promise<Oceanic.Message> {

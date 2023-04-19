@@ -1,7 +1,7 @@
 import * as Oceanic from "oceanic.js";
 import {Context} from "./Context.js";
 
-export type Argument = "MEMBER" | "USER" | "BOOLEAN" | "STRING" | "REASON" | "NUMBER" | "DATE" | "CHANNEL_GUILD" | "CHANNEL_TEXT" | "ROLE" | "TIME" | "ATTACHMENT";
+export type Argument = "ANY" | "MEMBER" | "USER" | "BOOLEAN" | "STRING" | "REASON" | "NUMBER" | "DATE" | "CHANNEL_GUILD" | "CHANNEL_TEXT" | "ROLE" | "TIME" | "ATTACHMENT";
 
 export type CommandOptions = Oceanic.ApplicationCommandOptions & {
     argument: Argument;

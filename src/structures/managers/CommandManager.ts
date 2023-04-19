@@ -1,6 +1,6 @@
 import * as Oceanic from "oceanic.js";
 import fs from "fs";
-import {Command} from "../structure/Command.js";
+import {Command, CommandOptions} from "../structure/Command.js";
 import {Context, Attachment, Response} from "../structure/Context.js";
 import {Client} from "../structure/Client.js";
 import {bufferAttachmentToURL} from "../../utils/bufferAttachmentToURL.js";
@@ -47,19 +47,19 @@ export class CommandManager {
 
             const name = ctx.content.slice(prefix.length).split(" ")[0];
             const command = this.commands.get(name) || this.aliases.get(name);
-            const context = new Context(ctx);
-            
             if (command && !command.disablePrefix) {
-                const argument = await this.argumenthandler(command, context.args, ctx);
-                
+                const context = new Context(ctx, command.options);
+                const argument = await this.argumentHandler(ctx, context.args, command.options);
+
                 if (argument._errors.length) {
-                    ctx.channel.createMessage({content: argument._errors[0]});
+                    ctx.channel.createMessage({ content: argument._errors[0] });
                     return;
                 }
-                
+
                 await ctx.channel?.sendTyping();
                 context.args = argument._arguments;
                 context.attachments = argument._attachments;
+                console.log(argument._arguments, "Argument Handler");
                 command.run(context);
             }
         }
@@ -67,31 +67,37 @@ export class CommandManager {
             const command = this.commands.get(ctx.data.name);
             if (command) {
                 const context = new Context(ctx, command.options);
-                const argument = await this.argumenthandler(command, context.args, ctx);
+                const argument = await this.argumentHandler(ctx, context.args, command.options);
                 context.args = argument._arguments;
                 context.attachments = argument._attachments;
+                console.log(argument._arguments, "Argument Handler");
                 command.run(context);
             }
         }
     }
 
-    private async argumenthandler(command: Command, argument: string[], ctx: Response) {
+    private async argumentHandler(ctx: Response, argument: string[], options?: CommandOptions[]) {
         //The argument handler just return the value and it has definition error.
         const _arguments: unknown[] = [];
         const _errors: string[] = [];
         const _attachments: (Attachment | undefined)[] = [];
 
-        const files: Oceanic.Attachment[] = [];
+        const ctxArrFiles: Oceanic.Attachment[] = [];
         if (ctx instanceof Oceanic.Message) {
             for (const file of ctx.attachments) {
-                files.push(file[1]);
+                ctxArrFiles.push(file[1]);
+            }
+        }
+        else if (ctx instanceof Oceanic.CommandInteraction) {
+            for (const file of ctx.data.resolved.attachments) {
+                ctxArrFiles.push(file[1]);
             }
         }
 
         let count = 0;
         let countAttachment = 0;
 
-        if (command.options == undefined) {
+        if (options == undefined) {
             return {
                 _errors,
                 _attachments,
@@ -99,11 +105,11 @@ export class CommandManager {
             }
         }
 
-        for (const args of command.options) {
+        for (const args of options) {
             const value = argument[count];
             switch (args.type) {
                 case 3: {
-                    if (typeof value != "string" && args.required) {
+                    if (typeof value != "string" && args.required == true && args.argument != "ANY") {
                         const td = {
                             STRING: "O texto não foi **definido**.",
                             REASON: "O motivo não foi **definido**.",
@@ -111,7 +117,7 @@ export class CommandManager {
                         }
                         _errors.push(td[value as "STRING" | "REASON" | "TIME"]);
                     }
-                    
+
                     _arguments.push(value); //String or undefined value.
                     break;
                 }
@@ -122,7 +128,7 @@ export class CommandManager {
                     else if (value == "false") boolean = false;
                     else if (typeof value == "boolean") boolean = value;
 
-                    if (typeof boolean != "boolean" && args.required) {
+                    if (typeof boolean != "boolean" && args.required == true) {
                         _errors.push("Você não escolheu entre **verdadeiro** ou **falso**.");
                     }
                     _arguments.push(boolean); //Boolean or undefined value.
@@ -135,13 +141,13 @@ export class CommandManager {
 
                     if (args.argument == "USER") user = this.client.users.get(id);
                     else if (args.argument == "MEMBER") user = this.client.guilds.get(ctx.guild!.id)?.members.get(id);
-                    
+
                     if (id) {
-                        if (user == undefined && args.required) {
+                        if (user == undefined && args.required == true) {
                             _errors.push(`O ${args.argument == "USER" ? "usuário" : "membro"} \`${value}\` não foi **encontrado**.`);
                         }
                     }
-                    else {
+                    else if (args.required) {
                         _errors.push(`O ${args.argument == "USER" ? "usuário" : "membro"} não foi **definido**.`);
                     }
                     _arguments.push(user); //User or Member or undefined value.
@@ -155,7 +161,7 @@ export class CommandManager {
                     if (id) {
                         if (args.argument == "CHANNEL_GUILD") channel = this.client.guilds.get(ctx.guild!.id)?.channels.get(id);
                         else if (args.argument == "CHANNEL_TEXT") channel = this.client.getChannel(id);
-                        if (channel == undefined && args.required) _errors.push("O canal não foi **encontrado**.");
+                        if (channel == undefined && args.required == true) _errors.push("O canal não foi **encontrado**.");
                     }
                     else if (args.required) {
                         _errors.push("O canal não foi **definido**.");
@@ -167,12 +173,12 @@ export class CommandManager {
                 case 8: {
                     let role: Oceanic.Role | undefined;
                     const id = value?.replace(/[<@&>]/g, "");
-                    
+
                     if (id) {
                         role = this.client.guilds.get(ctx.guild!.id)?.roles.get(id);
-                        if (role == undefined && args.required) {
+                        if (role == undefined && args.required == true) {
                             _errors.push("O cargo não foi **encontrado**.");
-                        } 
+                        }
                     }
                     else if (args.required) {
                         _errors.push("O cargo não foi **definido**.");
@@ -180,28 +186,38 @@ export class CommandManager {
                     _arguments.push(role); //Role or undefined value.
                     break;
                 }
-                
+
                 case 10: {
-                    if (value == undefined && args.required) _errors.push("O número não foi **definido**.");
-                    else if (isNaN(Number(value)) && args.required) _errors.push(`O valor \`${value}\` não é um número.`);
+                    if (value == undefined && args.required == true) _errors.push("O número não foi **definido**.");
+                    else if (isNaN(Number(value)) && args.required == true) _errors.push(`O valor \`${value}\` não é um número.`);
                     _arguments.push(Number(value)); //Number or NaN value.
                     break;
                 }
 
-                case 11: { //Attachment Custom or undefined value.
-                    const file = files[countAttachment];
-                    if (args.required && file == undefined) {
-                        _errors.push("O arquivo não foi **definido**.");
+                case 11: { //Attachment custom or undefined value.
+                    const file = ctxArrFiles[countAttachment];
+                    if (file == undefined && args.required == true) {
+                        _errors.push(`O arquivo não foi **definido**.`);
+                        break;
                     }
-                    else if (file) _attachments.push(await bufferAttachmentToURL(file));
-                    else if (!file) _attachments.push(undefined);
-
+                    else if (file) {
+                        _attachments.push(await bufferAttachmentToURL(file));
+                        _arguments.push(file.id);
+                    }
+                    else if (!file) {
+                        _attachments.push(undefined);
+                        _arguments.push(undefined);
+                    }
                     countAttachment++;
                     break;
                 }
             }
 
             count++;
+        }
+
+        if (options[count-1].argument == "REASON" || options[count-1].argument == "ANY") {
+            _arguments.push(...argument.slice(count));
         }
 
         return {
