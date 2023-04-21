@@ -27,11 +27,11 @@ export class Context<T extends any[]> {
             if (options) {
                 let attachmentCount = 0;
                 let args = ctx.content.split(" ").slice(1);
-                const attachments = Object.values(ctx.attachments)[attachmentCount];
+                const attachments = Object.values(ctx.attachments);
                 
                 for (let c = 0; c<options.length; c++) {
                     if (options[c].argument == "ATTACHMENT") {
-                        this.args.push(attachments);
+                        this.args.push(attachments[attachmentCount]);
                         args.unshift("");
                         attachmentCount++;
                     }
