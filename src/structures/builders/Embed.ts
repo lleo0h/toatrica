@@ -39,7 +39,7 @@ export class Embed {
     }
 
     public setColorHex(color: string) {
-        this.color == parseInt(color.toUpperCase().replace("#", ""), 16);
+        this.color = parseInt(color.toUpperCase().replace("#", ""), 16);
         return this;
     }
     
