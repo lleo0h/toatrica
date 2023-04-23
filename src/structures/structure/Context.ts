@@ -60,8 +60,6 @@ export class Context<T extends any[]> {
                 else this.args.push(undefined);
             }
         }
-
-        console.log(this.args, "Context");
     }
 
     public async send(content: string | Oceanic.CreateMessageOptions): Promise<Oceanic.Message> {

@@ -1,3 +1,4 @@
+import {Client} from "../structures/structure/Client.js";
 import {Command} from "../structures/structure/Command.js";
 import {Context} from "../structures/structure/Context.js";
 import * as Oceanic from "oceanic.js";
@@ -7,39 +8,27 @@ export default class Test extends Command {
         super({
             name: "test",
             aliases: ["t"],
-            options: [
-                {
-                    name: "file",
-                    description: "set file",
-                    type: 11,
-                    argument: "ATTACHMENT"
-                },
-                {
-                    name: "boolean",
-                    description: "set boolean",
-                    type: 5,
-                    argument: "BOOLEAN"
-                },
-                {
-                    name: "reason",
-                    description: "set text",
-                    type: 3,
-                    argument: "REASON"
-                },
-                {
-                    name: "user",
-                    description: "set text",
-                    type: 6,
-                    argument: "USER"
-                }
-            ],
             description: "Test command SLASH and PREFIX of Toatrica bot.",
             type: 1
         });
     }
 
     async run(ctx: Context<[String, Oceanic.Member]>) {
-        // console.log(ctx.args);
-        // console.log(ctx.attachments);
+        const client = ctx.response.client as Client;
+        
+        const options = {
+            identifier: "messageReactionAdd",
+            // collected: 50,
+            // timeout: 50000,
+            // filter(message: Oceanic.Message) {
+            //     return message.author.id != ctx.response.id;
+            // }
+        }
+
+        client.collector.set("messageReactionAdd", options, (message: Oceanic.Message, reactor: Oceanic.Member) => {
+            console.log(reactor);
+        });
+
+        console.log(client.collector.events)
     }
 }

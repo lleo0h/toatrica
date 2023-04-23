@@ -59,7 +59,6 @@ export class CommandManager {
                 await ctx.channel?.sendTyping();
                 context.args = argument._arguments;
                 context.attachments = argument._attachments;
-                console.log(argument._arguments, "Argument Handler");
                 command.run(context);
             }
         }
@@ -70,7 +69,6 @@ export class CommandManager {
                 const argument = await this.argumentHandler(ctx, context.args, command.options);
                 context.args = argument._arguments;
                 context.attachments = argument._attachments;
-                console.log(argument._arguments, "Argument Handler");
                 command.run(context);
             }
         }

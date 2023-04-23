@@ -3,13 +3,17 @@ import fs from "fs";
 import {Event} from "../structure/Event.js";
 import {Client} from "../structure/Client.js";
 
-interface CollectorManagerOptions extends Omit<Event, "name">{
+interface SetOptions {
     identifier: string;
+    timeout?: number;
+    collected?: number;
+    filter?: (...args: any) => boolean;
+    once?: boolean;
 }
 
 export class CollectorManager {
-    public events = new Map<keyof Oceanic.ClientEvents, CollectorManagerOptions[]>();
     private client: Client;
+    public events = [] as SetOptions[];
 
     constructor(client: Client) {
         this.client = client;
@@ -22,71 +26,61 @@ export class CollectorManager {
             const event = await import(`${dir}/${file}`)
             const Event = new event.default as Event;
             const {name, once, run} = Event;
-    
-            if (Event.once) this.set(name, {
+
+            this.set(name, {
                 identifier: name,
-                once,
-                run
-            });
-            else this.set(name, {
-                identifier: name,
-                run
-            });
+                once: once || false
+            }, run);
         }
 
         console.log("Loadded events");
         return this;
     }
 
-    public set(event: keyof Oceanic.ClientEvents, {identifier, once, run}: CollectorManagerOptions) {
-        if (this.events.has(event)) {
-            const array = this.events.get(event)!;
-            if (array.find(index => index.identifier == identifier)) return;
+    public set(event: keyof Oceanic.ClientEvents, options: SetOptions, callback: (...args: any) => unknown) {
+        const client = this.client;
+        const events = this.events;
 
-            this.events.set(event, [...array, {
-                identifier,
-                run
-            }]);
+        const indice = this.events.findIndex(index => index.identifier == options.identifier);
+        if (indice > -1) return;
+
+        if (options.once == true) {
+            this.client.once(event, (..._this) => {
+                if (options.filter && !options?.filter(..._this, this.client)) {
+                    return;
+                }
+                return callback(..._this, this.client);
+            });
         }
-        else this.events.set(event, [{
-            identifier,
-            run
-        }]);
+        else {
+            const indice = this.events.findIndex(index => index.identifier);
+            
+            let collected = 0;
+            
+            function listener(..._this: any) {
+                if (options.filter && !options?.filter(..._this, client)) {
+                    return;
+                }
 
-        if (!this.client._events || !this.client._events[event]) {
-            if (once) {
-                this.client.once(event, (..._this) => {
-                    for (const _event of this.events.get(event)!) {
-                        _event.run(..._this, this.client);
-                    }
-                });
+                if (options.collected! <= collected) {
+                    client.removeListener(event, listener);
+                    events.splice(indice, 1);
+                    return;
+                }
+                else collected++;
+                
+                return callback(..._this, client);
             }
-            else {
-                this.client.on(event, (..._this) => {
-                    for (const _event of this.events.get(event)!) {
-                        _event.run(..._this, this.client);
-                    }
-                });
+
+            if (options.timeout) {
+                setTimeout(() => {
+                    client.removeListener(event, listener);
+                    events.splice(indice, 1);
+                }, options.timeout);
             }
+
+            this.events.push(options);
+            this.client.on(event, listener);
         }
-    }
-
-    public remove(event: keyof Oceanic.ClientEvents, {identifier}: Omit<CollectorManagerOptions, "run">) {
-        const _identifier = this.events.get(event);
-        const _notDeleteEvent: CollectorManagerOptions[] = [];
-
-        if (_identifier == undefined) return;
-
-        for (const i of _identifier) {
-            if (i.identifier != identifier) {
-                const {identifier, run} = i;
-                _notDeleteEvent.push({
-                    identifier,
-                    run
-                });
-            }
-        }
-
-        this.events.set(event, _notDeleteEvent);
     }
 }
