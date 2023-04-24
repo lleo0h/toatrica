@@ -12,18 +12,28 @@ interface SetOptions {
     once?: boolean;
 }
 
+interface Events {
+    identifier: string;
+    listener: () => unknown;
+    timeout?: NodeJS.Timeout;
+}
+
 export class CollectorManager {
     private client: Client;
     private emitter = new EventEmitter().setMaxListeners(Infinity);
-    private stops: string[] = [];
-    public events = [] as {
-        identifier: string;
-        listener: () => unknown;
-        timeout?: NodeJS.Timeout;
-    }[];
+    private stops: Events[] = [];
+    public events: Events[] = [];
 
     constructor(client: Client) {
         this.client = client;
+
+        this.emitter.on("stop", (identifier) => {
+            const indice = this.stops.findIndex(index => index.identifier == identifier);
+            if (indice > -1) {
+                this.stops[indice].listener();
+                this.stops.splice(indice, 1);
+            }
+        });
     }
 
     public async loader(dir?: string) {
@@ -57,11 +67,11 @@ export class CollectorManager {
             });
         }
         else {
-            const indice = this.events.findIndex(index => index.identifier == options.identifier);
-            if (indice != -1) return;
-
             const events = this.events;
             const emitter = this.emitter;
+            const indice = this.events.findIndex(index => index.identifier == options.identifier);
+            if (indice > -1) return;
+
             function listener(..._this: any) {
                 let collected = 0;
 
@@ -70,10 +80,10 @@ export class CollectorManager {
                 }
 
                 if (options.collected! <= collected) {
+                    events.splice(indice, 1);
+                    emitter.emit("stop", options.identifier);
                     client.removeListener(event, listener);
                     clearTimeout(timeout);
-                    emitter.emit("stop");
-                    events.splice(indice, 1);
                     return;
                 }
                 
@@ -84,42 +94,24 @@ export class CollectorManager {
             let timeout: NodeJS.Timeout | undefined;
             if (options.timeout) {
                 timeout = setTimeout(() => {
+                    events.splice(indice, 1);
+                    emitter.emit("stop", options.identifier);
                     client.removeListener(event, listener);
-                    this.emitter.emit("stop");
-                    this.events.splice(indice, 1);
-
-                    console.log(this.events.map(index => index.identifier))
                 }, options.timeout);
             }
 
-            this.client.on(event, listener);
             this.events.push({
                 identifier: options.identifier,
                 timeout,
                 listener
             });
+
+            this.client.on(event, listener);
         }
     }
 
     public stop(identifier: string, listener: () => unknown): void {
-        const emitter = this.emitter;
-        const events = this.events;
-        const stops = this.stops;
-
-        if (this.stops.indexOf(identifier) == -1) {
-            this.stops.push(identifier);
-            emitter.on("stop", function event() {
-                const _event = events.find(index => index.identifier == identifier);
-
-                if (_event) {
-                    listener();
-                    if (_event.timeout) {
-                        clearTimeout(_event.timeout);
-                    }
-                    emitter.removeListener("stop", event);
-                    stops.splice(stops.indexOf(identifier), 1);
-                }
-            });
-        }
+        const indice = this.stops.findIndex(index => index.identifier == identifier);
+        if (indice == -1) this.stops.push({identifier, listener});
     }
 }
