@@ -15,20 +15,13 @@ export default class Test extends Command {
 
     async run(ctx: Context<[String, Oceanic.Member]>) {
         const client = ctx.response.client as Client;
-        
-        const options = {
-            identifier: "messageReactionAdd",
-            // collected: 50,
-            // timeout: 50000,
-            // filter(message: Oceanic.Message) {
-            //     return message.author.id != ctx.response.id;
-            // }
-        }
 
-        client.collector.set("messageReactionAdd", options, (message: Oceanic.Message, reactor: Oceanic.Member) => {
+        client.collector.set("messageReactionAdd", {identifier: "collector", timeout: 3000}, (message: Oceanic.Message, reactor: Oceanic.Member) => {
             console.log(reactor);
         });
 
-        console.log(client.collector.events)
+        client.collector.stop("collector", () => {
+            console.log("stop");
+        });
     }
 }
