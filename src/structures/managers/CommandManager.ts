@@ -41,61 +41,48 @@ export class CommandManager {
     }
 
     public async run(ctx: Oceanic.CommandInteraction | Oceanic.Message) {
-        if (ctx instanceof Oceanic.Message) {
-            if (ctx.channel?.type == undefined) return;
-            if (ctx.channel!.type == 1) return;
-            if (!ctx.content.startsWith(prefix)) return;
+        if (ctx.channel?.type == undefined) return;
+        if (ctx.channel!.type == 1) return;
 
+        let command: Command | undefined;
+
+        if (ctx instanceof Oceanic.Message && ctx.content.startsWith(prefix)) {
             const name = ctx.content.slice(prefix.length).split(" ")[0];
-            const command = this.commands.get(name) || this.aliases.get(name);
-            if (command && !command.disablePrefix) {
-                if (command.permissions) { //added later an option to disable the notification
-                    const member_permissions = this.permissionHandler(ctx.member!.id, ctx, command.permissions);
-                    const client_permissions = this.permissionHandler(ctx.client.user.id, ctx, command.permissions);
+            command = this.commands.get(name) || this.aliases.get(name);
 
-                    if (client_permissions.length) {
-                        const message = await ctx.channel.createMessage({
-                            content: `Eu não tenho ${client_permissions.length > 1 ? `as permissoões de ${client_permissions.reduce((acc, cur) => `\`${acc}\`, \`${cur}\``)}` : `a permissão de \`${member_permissions[0]}\` para usar executar esse comando`}.`,
-                            messageReference: {messageID: ctx.id}
-                        });
-                        setTimeout(() => message.delete().catch(() => {}), 3000);
-                        return;
-                    }
-
-                    if (member_permissions.length) {
-                        const message = await ctx.channel.createMessage({
-                            content: `Você precisa ${member_permissions.length > 1 ? `das permissoões de ${member_permissions.reduce((acc, cur) => `\`${acc}\`, \`${cur}\``)}` : `da permissão de \`${member_permissions[0]}\` para usar esse comando`}.`,
-                            messageReference: {messageID: ctx.id}
-                        });
-                        setTimeout(() => message.delete().catch(() => {}), 3000);
-                        return;
-                    }
-                }
-            
-                const context = new Context(ctx, command.options);
-                const argument = await this.argumentHandler(ctx, context.args, command.options);
-
-                if (argument._errors.length) {
-                    ctx.channel.createMessage({ content: argument._errors[0] });
-                    return;
-                }
-
-                await ctx.channel?.sendTyping();
-                context.args = argument._arguments;
-                context.attachments = argument._attachments;
-                command.run(context);
-            }
+            if (command?.disablePrefix) return;
+            await ctx.channel?.sendTyping();
         }
-        else {
-            const command = this.commands.get(ctx.data.name);
-            if (command) {
-                if (command.permissions) {
-                    const member_permissions = this.permissionHandler(ctx.member!.id, ctx, command.permissions);
-                    const client_permissions = this.permissionHandler(ctx.client.user.id, ctx, command.permissions);
+        else if (ctx instanceof Oceanic.CommandInteraction) command = this.commands.get(ctx.data.name);
 
+        if (command) {
+            if (command.permissions) {
+                const member_permissions = this.permissionHandler(ctx.member!.id, ctx, command.permissions);
+                const client_permissions = this.permissionHandler(ctx.client.user.id, ctx, command.permissions);
+
+                if (ctx instanceof Oceanic.Message) {
+                    if (client_permissions.length) {
+                        const message = await ctx.channel.createMessage({
+                            content: `Preciso ter ${client_permissions.length > 1 ? `as permissoões de ${client_permissions.reduce((acc, cur) => `\`${acc}\`, \`${cur}\``)}` : `a permissão de \`${member_permissions[0]}\` para usar executar esse comando`}.`,
+                            messageReference: {messageID: ctx.id}
+                        });
+                        setTimeout(() => message.delete().catch(() => {}), 3000);
+                        return;
+                    }
+
+                    if (member_permissions.length) {
+                        const message = await ctx.channel.createMessage({
+                            content: `Você precisa ${member_permissions.length > 1 ? `das permissoões de ${member_permissions.reduce((acc, cur) => `\`${acc}\`, \`${cur}\``)}` : `da permissão de \`${member_permissions[0]}\` para usar esse comando`}.`,
+                            messageReference: {messageID: ctx.id}
+                        });
+                        setTimeout(() => message.delete().catch(() => {}), 3000);
+                        return;
+                    }
+                }
+                else if (ctx instanceof Oceanic.CommandInteraction) {
                     if (client_permissions.length) {
                         ctx.createMessage({
-                            content: `Eu não tenho ${client_permissions.length > 1 ? `as permissoões de ${client_permissions.reduce((acc, cur) => `\`${acc}\`, \`${cur}\``)}` : `a permissão de \`${member_permissions[0]}\` para usar executar esse comando`}.`,
+                            content: `Preciso ter ${client_permissions.length > 1 ? `as permissoões de ${client_permissions.reduce((acc, cur) => `\`${acc}\`, \`${cur}\``)}` : `a permissão de \`${member_permissions[0]}\` para usar executar esse comando`}.`,
                             flags: 64
                         });
                         return;
@@ -109,13 +96,13 @@ export class CommandManager {
                         return;
                     }
                 }
-
-                const context = new Context(ctx, command.options);
-                const argument = await this.argumentHandler(ctx, context.args, command.options);
-                context.args = argument._arguments;
-                context.attachments = argument._attachments;
-                command.run(context);
             }
+
+            const context = new Context(ctx, command.options);
+            const argument = await this.argumentHandler(ctx, context.args, command.options);
+            context.args = argument._arguments;
+            context.attachments = argument._attachments;
+            command.run(context);
         }
     }
 

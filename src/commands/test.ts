@@ -15,14 +15,6 @@ export default class Test extends Command {
     }
 
     async run(ctx: Context<[String, Oceanic.Member]>) {
-        const client = ctx.response.client as Client;
-
-        client.collector.set("messageReactionAdd", {identifier: "collector", timeout: 3000}, (message: Oceanic.Message, reactor: Oceanic.Member) => {
-            console.log(reactor);
-        });
-
-        client.collector.stop("collector", () => {
-            console.log("stop");
-        });
+        ctx.send("Test command.");
     }
 }
