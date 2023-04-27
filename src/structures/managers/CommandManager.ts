@@ -63,10 +63,10 @@ export class CommandManager {
                 if (ctx instanceof Oceanic.Message) {
                     if (client_permissions.length) {
                         const message = await ctx.channel.createMessage({
-                            content: `Preciso ter ${client_permissions.length > 1 ? `as permissoões de ${client_permissions.reduce((acc, cur) => `\`${acc}\`, \`${cur}\``)}` : `a permissão de \`${member_permissions[0]}\` para usar executar esse comando`}.`,
+                            content: `Preciso ter ${client_permissions.length > 1 ? `as permissoões de ${client_permissions.reduce((acc, cur) => `\`${acc}\`, \`${cur}\``)}` : `a permissão de \`${client_permissions[0]}\` para usar executar esse comando`}.`,
                             messageReference: {messageID: ctx.id}
                         });
-                        setTimeout(() => message.delete().catch(() => {}), 3000);
+                        setTimeout(() => message.delete().catch(() => {}), 4500);
                         return;
                     }
 
@@ -75,7 +75,7 @@ export class CommandManager {
                             content: `Você precisa ${member_permissions.length > 1 ? `das permissoões de ${member_permissions.reduce((acc, cur) => `\`${acc}\`, \`${cur}\``)}` : `da permissão de \`${member_permissions[0]}\` para usar esse comando`}.`,
                             messageReference: {messageID: ctx.id}
                         });
-                        setTimeout(() => message.delete().catch(() => {}), 3000);
+                        setTimeout(() => message.delete().catch(() => {}), 4500);
                         return;
                     }
                 }
@@ -100,6 +100,12 @@ export class CommandManager {
 
             const context = new Context(ctx, command.options);
             const argument = await this.argumentHandler(ctx, context.args, command.options);
+
+            if (argument._errors.length) {
+                ctx.channel.createMessage({ content: argument._errors[0] });
+                return;
+            }
+
             context.args = argument._arguments;
             context.attachments = argument._attachments;
             command.run(context);
@@ -113,13 +119,6 @@ export class CommandManager {
         const arr: string[] = [];
         for (const permission of permissions) {
             if (!channel.permissionsOf(member.id).has(permission)) {
-                arr.push(permissions_pt[permission]);
-            }
-        }
-
-        for (const permission of permissions) {
-            if (!arr.includes(permission)) continue;
-            if (!member.permissions.has(permission)) {
                 arr.push(permissions_pt[permission]);
             }
         }
