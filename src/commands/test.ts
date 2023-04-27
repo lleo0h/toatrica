@@ -9,7 +9,8 @@ export default class Test extends Command {
             name: "test",
             aliases: ["t"],
             description: "Test command SLASH and PREFIX of Toatrica bot.",
-            type: 1
+            type: 1,
+            permissions: ["MODERATE_MEMBERS"]
         });
     }
 

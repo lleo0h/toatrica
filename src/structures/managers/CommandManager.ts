@@ -4,6 +4,7 @@ import {Command, CommandOptions} from "../structure/Command.js";
 import {Context, Attachment, Response} from "../structure/Context.js";
 import {Client} from "../structure/Client.js";
 import {bufferAttachmentToURL} from "../../utils/bufferAttachmentToURL.js";
+import {permissions_pt} from "../../utils/permissions.js";
 
 const prefix = "t/";
 
@@ -48,6 +49,29 @@ export class CommandManager {
             const name = ctx.content.slice(prefix.length).split(" ")[0];
             const command = this.commands.get(name) || this.aliases.get(name);
             if (command && !command.disablePrefix) {
+                if (command.permissions) { //added later an option to disable the notification
+                    const member_permissions = this.permissionHandler(ctx.member!.id, ctx, command.permissions);
+                    const client_permissions = this.permissionHandler(ctx.client.user.id, ctx, command.permissions);
+
+                    if (client_permissions.length) {
+                        const message = await ctx.channel.createMessage({
+                            content: `Eu não tenho ${client_permissions.length > 1 ? `as permissoões de ${client_permissions.reduce((acc, cur) => `\`${acc}\`, \`${cur}\``)}` : `a permissão de \`${member_permissions[0]}\` para usar executar esse comando`}.`,
+                            messageReference: {messageID: ctx.id}
+                        });
+                        setTimeout(() => message.delete().catch(() => {}), 3000);
+                        return;
+                    }
+
+                    if (member_permissions.length) {
+                        const message = await ctx.channel.createMessage({
+                            content: `Você precisa ${member_permissions.length > 1 ? `das permissoões de ${member_permissions.reduce((acc, cur) => `\`${acc}\`, \`${cur}\``)}` : `da permissão de \`${member_permissions[0]}\` para usar esse comando`}.`,
+                            messageReference: {messageID: ctx.id}
+                        });
+                        setTimeout(() => message.delete().catch(() => {}), 3000);
+                        return;
+                    }
+                }
+            
                 const context = new Context(ctx, command.options);
                 const argument = await this.argumentHandler(ctx, context.args, command.options);
 
@@ -65,6 +89,27 @@ export class CommandManager {
         else {
             const command = this.commands.get(ctx.data.name);
             if (command) {
+                if (command.permissions) {
+                    const member_permissions = this.permissionHandler(ctx.member!.id, ctx, command.permissions);
+                    const client_permissions = this.permissionHandler(ctx.client.user.id, ctx, command.permissions);
+
+                    if (client_permissions.length) {
+                        ctx.createMessage({
+                            content: `Eu não tenho ${client_permissions.length > 1 ? `as permissoões de ${client_permissions.reduce((acc, cur) => `\`${acc}\`, \`${cur}\``)}` : `a permissão de \`${member_permissions[0]}\` para usar executar esse comando`}.`,
+                            flags: 64
+                        });
+                        return;
+                    }
+
+                    if (member_permissions.length) {
+                        ctx.createMessage({
+                            content: `Você precisa ${member_permissions.length > 1 ? `das permissoões de ${member_permissions.reduce((acc, cur) => `\`${acc}\`, \`${cur}\``)}` : `da permissão de \`${member_permissions[0]}\` para usar esse comando`}.`,
+                            flags: 64
+                        });
+                        return;
+                    }
+                }
+
                 const context = new Context(ctx, command.options);
                 const argument = await this.argumentHandler(ctx, context.args, command.options);
                 context.args = argument._arguments;
@@ -72,6 +117,27 @@ export class CommandManager {
                 command.run(context);
             }
         }
+    }
+
+    private permissionHandler(id: string, ctx: Response, permissions: Oceanic.PermissionName[]) {
+        const channel = ctx.client.getChannel(ctx.channel!.id) as Oceanic.TextableChannel;
+        const member = ctx.guild!.members.get(id)!;
+
+        const arr: string[] = [];
+        for (const permission of permissions) {
+            if (!channel.permissionsOf(member.id).has(permission)) {
+                arr.push(permissions_pt[permission]);
+            }
+        }
+
+        for (const permission of permissions) {
+            if (!arr.includes(permission)) continue;
+            if (!member.permissions.has(permission)) {
+                arr.push(permissions_pt[permission]);
+            }
+        }
+
+        return arr;
     }
 
     private async argumentHandler(ctx: Response, argument: string[], options?: CommandOptions[]) {
