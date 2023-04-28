@@ -5,7 +5,8 @@ import {Event} from "../structures/structure/Event.js";
 export default class Ready extends Event {
     constructor() {
         super({
-            name: "ready"
+            name: "ready",
+            once: true,
         });
     }
 

@@ -1,7 +1,7 @@
 import * as Oceanic from "oceanic.js";
 import {Context} from "./Context.js";
 
-export type Argument = "MEMBER" | "USER" | "BOOLEAN" | "STRING" | "REASON" | "NUMBER" | "DATE" | "CHANNEL_GUILD" | "CHANNEL_TEXT" | "ROLE" | "TIME" | "ATTACHMENT";
+export type Argument = "ANY" | "MEMBER" | "USER" | "BOOLEAN" | "STRING" | "REASON" | "NUMBER" | "DATE" | "CHANNEL_GUILD" | "CHANNEL_TEXT" | "ROLE" | "TIME" | "ATTACHMENT";
 
 export type CommandOptions = Oceanic.ApplicationCommandOptions & {
     argument: Argument;
@@ -15,8 +15,9 @@ export class Command {
     public type?: Oceanic.ApplicationCommandTypes;
     public disableSlash?: boolean;
     public disablePrefix?: boolean;
+    public permissions?: Array<Oceanic.Constants.PermissionName>
 
-    constructor({name, aliases, description, options, type, disableSlash, disablePrefix}: Omit<Command, "run">) {
+    constructor({name, aliases, description, options, type, disableSlash, disablePrefix, permissions}: Omit<Command, "run">) {
         this.name = name;
         this.aliases = aliases;
         this.description = description;
@@ -24,6 +25,7 @@ export class Command {
         this.type = type;
         this.disableSlash = disableSlash;
         this.disablePrefix = disablePrefix;
+        this.permissions = permissions;
     }
 
     async run(ctx: Context<any>): Promise<any>{};

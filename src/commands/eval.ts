@@ -17,13 +17,15 @@ export default class Eval extends Command {
 
         try {
             const code = ctx.args.join(" ");
-            const result = eval(code);
+            let result = eval(code);
             
-            if (result instanceof Promise) await result.catch((e) => {
+            if (result instanceof Promise) result = await result.catch((e) => {
                 ctx.send(`\`\`\`js\n${e}\`\`\``);
             });
 
-            ctx.send(`\`\`\`js\n${util.inspect(result, {depth: 0})}\`\`\``);
+            ctx.send(`\`\`\`js\n${util.inspect(result, {depth: 0})}\`\`\``).catch((e) => {
+                ctx.send(`\`\`\`js\n${e}\`\`\``);
+            });
         }
 
         catch (e) {

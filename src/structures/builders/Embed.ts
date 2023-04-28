@@ -39,7 +39,7 @@ export class Embed {
     }
 
     public setColorHex(color: string) {
-        this.color == parseInt(color.toUpperCase().replace("#", ""), 16);
+        this.color = parseInt(color.toUpperCase().replace("#", ""), 16);
         return this;
     }
     
@@ -55,6 +55,7 @@ export class Embed {
 
     public setThumbnail(url: string) {
         this.thumbnail = {url}
+        return this;
     }
 
     public addField({name, value, inline}: Oceanic.EmbedField) {
@@ -72,5 +73,3 @@ export class Embed {
         return this;
     }
 }
-
-new Embed();

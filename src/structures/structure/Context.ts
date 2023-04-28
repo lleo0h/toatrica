@@ -15,7 +15,7 @@ export class Context<T extends any[]> {
     public guild: Oceanic.Guild;
     public args: T = [] as unknown as T; 
     public response: Response;
-    public attachments: Attachment[] = [];
+    public attachments: (Attachment | undefined)[] = [];
 
     constructor(ctx: Response, options?: CommandOptions[]) {
         this.guild = ctx.guild!;
@@ -23,7 +23,29 @@ export class Context<T extends any[]> {
 
         if (ctx instanceof Oceanic.Message) {
             this.author = ctx.author;
-            for (const arg of ctx.content.split(" ").slice(1)) this.args.push(arg);
+
+            if (options) {
+                let attachmentCount = 0;
+                let args = ctx.content.split(" ").slice(1);
+                const attachments = Object.values(ctx.attachments);
+                
+                for (let c = 0; c<options.length; c++) {
+                    if (options[c].argument == "ATTACHMENT") {
+                        this.args.push(attachments[attachmentCount]);
+                        args.unshift("");
+                        attachmentCount++;
+                    }
+                    else {
+                        this.args.push(args[c]);
+                    }
+                }
+
+                args = args.slice(attachmentCount-1+options.length);
+                this.args.push(...args);
+            }
+            else {
+                this.args = ctx.content.split(" ").slice(1) as string[] as T;
+            }
         }
         else {
             this.author = ctx.user;
@@ -74,7 +96,7 @@ export class Context<T extends any[]> {
                 return this.response.getOriginal();
             }
             else {
-                return this.response.channel!.createMessage({content});
+                return this.response.channel!.createMessage({content, messageReference: {messageID: this.response.id}});
             }
         }
     }
