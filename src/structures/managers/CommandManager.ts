@@ -82,7 +82,7 @@ export class CommandManager {
                 else if (ctx instanceof Oceanic.CommandInteraction) {
                     if (client_permissions.length) {
                         ctx.createMessage({
-                            content: `Preciso ter ${client_permissions.length > 1 ? `as permissoões de ${client_permissions.reduce((acc, cur) => `\`${acc}\`, \`${cur}\``)}` : `a permissão de \`${member_permissions[0]}\` para usar executar esse comando`}.`,
+                            content: `Preciso ter ${client_permissions.length > 1 ? `as permissoões de ${client_permissions.reduce((acc, cur) => `\`${acc}\`, \`${cur}\``)}` : `a permissão de \`${client_permissions[0]}\` para usar executar esse comando`}.`,
                             flags: 64
                         });
                         return;
