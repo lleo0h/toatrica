@@ -5,6 +5,7 @@ export type Argument = "ANY" | "MEMBER" | "USER" | "BOOLEAN" | "STRING" | "REASO
 
 export type CommandOptions = Oceanic.ApplicationCommandOptions & {
     argument: Argument;
+    error: string;
 }
 
 export class Command {
