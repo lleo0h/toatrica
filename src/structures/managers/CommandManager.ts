@@ -51,7 +51,7 @@ export class CommandManager {
             command = this.commands.get(name) || this.aliases.get(name);
 
             if (command?.disablePrefix) return;
-            await ctx.channel?.sendTyping();
+            if (command) await ctx.channel?.sendTyping();
         }
         else if (ctx instanceof Oceanic.CommandInteraction) command = this.commands.get(ctx.data.name);
 
@@ -157,6 +157,7 @@ export class CommandManager {
 
         for (const args of options) {
             const value = argument[count];
+
             switch (args.type) {
                 case 3: {
                     if (typeof value != "string" && args.required == true && args.argument != "ANY") {
@@ -165,7 +166,7 @@ export class CommandManager {
                             REASON: "O motivo não foi **definido**.",
                             TIME: "O tempo não foi **definido**."
                         }
-                        _errors.push(td[value as "STRING" | "REASON" | "TIME"]);
+                        _errors.push(td[args.argument as "STRING" | "REASON" | "TIME"]);
                     }
 
                     _arguments.push(value); //String or undefined value.

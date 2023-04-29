@@ -1,4 +1,3 @@
-import {Client} from "../structures/structure/Client.js";
 import {Command} from "../structures/structure/Command.js";
 import {Context} from "../structures/structure/Context.js";
 import * as Oceanic from "oceanic.js";

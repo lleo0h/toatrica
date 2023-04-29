@@ -40,7 +40,7 @@ export class Context<T extends any[]> {
                     }
                 }
 
-                args = args.slice(attachmentCount-1+options.length);
+                args = args.slice(args.length);
                 this.args.push(...args);
             }
             else {
