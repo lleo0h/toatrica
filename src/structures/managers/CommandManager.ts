@@ -1,6 +1,6 @@
 import * as Oceanic from "oceanic.js";
 import fs from "fs";
-import {Command, Argument, CommandOptions} from "../structure/Command.js";
+import {Command, CommandOptions} from "../structure/Command.js";
 import {Context, Attachment, Response} from "../structure/Context.js";
 import {Client} from "../structure/Client.js";
 import {bufferAttachmentToURL} from "../../utils/bufferAttachmentToURL.js";
@@ -132,9 +132,25 @@ export class CommandManager {
 
         const error = { messages: [] as string[] }
 
+        const Argument = {
+            STRING: 3,
+            BOOLEAN: 5,
+            USER: 6,
+            MEMBER: 6,
+            CHANNEL_TEXT: 7,
+            CHANNEL_GUILD: 7,
+            ROLE: 8,
+            NUMBER: 10,
+            ATTACHMENT: 11,
+        }
+
         let count = 0;
 
         if (options) for (const args of options) {
+            if (Argument[args.argument] != args.type) {
+                throw new Error(`Type ${args.type} is not a ${args.argument}.`);
+            }
+            
             const value = content[count];
 
             const messageErrorRegex = args.error.replaceAll(/\{[^\}\s]+\}}/g, (text) => {
@@ -145,14 +161,10 @@ export class CommandManager {
                 
                 const search = flags[text];
                 return search == undefined ? text : search;
-            }); 
+            });
 
             switch (args.type) {
                 case 3: { //string or undefined
-                    if (args.argument != "USER") {
-                        throw new Error(`Type ${args.type} is not a ${args.argument}.`);
-                    }
-
                     if (typeof value != "string" && args.required == true) {
                         error.messages.push(messageErrorRegex);
                     }
@@ -162,10 +174,6 @@ export class CommandManager {
                 }
 
                 case 5: { //boolean or undefined
-                    if (args.argument != "BOOLEAN") {
-                        throw new Error(`Type ${args.type} is not a ${args.argument}.`);
-                    }
-
                     let boolean: boolean | undefined;
 
                     if (typeof value == "boolean") boolean = value;
@@ -181,10 +189,6 @@ export class CommandManager {
                 }
 
                 case 6: { //user, member or undefined
-                    if (args.argument != "USER" && args.argument != "MEMBER") {
-                        throw new Error(`Type ${args.type} is not a ${args.argument}.`);
-                    }
-
                     let user: Oceanic.User | Oceanic.Member | undefined;
                     const id = value?.replace(/[<@>]/g, "");
 
@@ -200,17 +204,13 @@ export class CommandManager {
                 }
 
                 case 7: { //channel, textchannel or undefiend
-                    if (args.argument != "CHANNEL_GUILD" && args.argument != "CHANNEL_TEXT") {
-                        throw new Error(`Type ${args.type} is not a ${args.argument}.`);
-                    }
-
                     let channel: Oceanic.Channel | Oceanic.TextChannel | undefined;
                     const id = value?.replace(/[<#>]/g, "");
 
                     if (args.argument == "CHANNEL_GUILD") channel = this.client.guilds.get(ctx.guild!.id)?.channels.get(id);
                     else if (args.argument == "CHANNEL_TEXT") channel = this.client.getChannel(id);
 
-                    if (args.required) {
+                    if (args.required == true && channel == undefined) {
                         error.messages.push(messageErrorRegex);
                     }
                     
@@ -219,10 +219,6 @@ export class CommandManager {
                 }
 
                 case 8: { //role or undefined
-                    if (args.argument != "ROLE") {
-                        throw new Error(`Type ${args.type} is not a ${args.argument}.`);
-                    }
-
                     const role = this.client.guilds.get(ctx.guild!.id)?.roles.get(value?.replace(/[<@&>]/g, ""));
                     if (role == undefined && args.required == true) {
                         error.messages.push(messageErrorRegex);
@@ -233,10 +229,6 @@ export class CommandManager {
                 }
 
                 case 10: { //number, NaN, or undefiend
-                    if (args.argument != "NUMBER") {
-                        throw new Error(`Type ${args.type} is not a ${args.argument}.`);
-                    }
-
                     if (value == undefined && args.required == true) error.messages.push(messageErrorRegex);
                     else if (isNaN(Number(value)) && args.required == true) error.messages.push(messageErrorRegex);
                     _arguments.push(Number(value));
@@ -244,10 +236,6 @@ export class CommandManager {
                 }
 
                 case 11: { //attachment custom or undefined
-                    if (args.argument != "ATTACHMENT") {
-                        throw new Error(`Type ${args.type} is not a ${args.argument}.`);
-                    }
-
                     let file: Oceanic.Attachment | undefined;
                     if (ctx instanceof Oceanic.Message) file = ctx.attachments.get(value);
                     else file = ctx.data.resolved.attachments.get(value);
@@ -272,9 +260,7 @@ export class CommandManager {
             count++;
         }
 
-        if (options) if (options[count-1].argument == "ANY") {
-            _arguments.push(...content.slice(count));
-        }
+        _arguments.push(...content.slice(count));
 
         return {
             error,
