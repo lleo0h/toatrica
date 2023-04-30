@@ -12,12 +12,11 @@ export default class Test extends Command {
             permissions: ["MODERATE_MEMBERS"],
             options: [
                 {
-                    name: "file",
-                    description: "Added file.",
-                    type: 11,
-                    argument: "ATTACHMENT",
-                    // error: "The \`{{argument}}\` is not a {{type}}.",
-                    error: "No file was found.",
+                    name: "membro",
+                    description: "Added member.",
+                    type: 6,
+                    argument: "MEMBER",
+                    error: "The \`{{argument}}\` is not a {{type}}.",
                     required: true
                 }
             ]
@@ -25,6 +24,6 @@ export default class Test extends Command {
     }
 
     async run(ctx: Context<[Oceanic.Member]>) {
-        ctx.send(`test command | ${ctx.args[0].tag} (${ctx.args[0].id})`);
+        ctx.send(`test | ${ctx.args[0].tag} (${ctx.args[0].id})`);
     }
 }
