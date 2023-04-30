@@ -12,11 +12,12 @@ export default class Test extends Command {
             permissions: ["MODERATE_MEMBERS"],
             options: [
                 {
-                    name: "member",
-                    description: "Added member.",
-                    type: 6,
-                    argument: "MEMBER",
-                    error: "The <\`{{argument}}\`> is not a {{type}}.",
+                    name: "file",
+                    description: "Added file.",
+                    type: 11,
+                    argument: "ATTACHMENT",
+                    // error: "The \`{{argument}}\` is not a {{type}}.",
+                    error: "No file was found.",
                     required: true
                 }
             ]
