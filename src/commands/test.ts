@@ -16,7 +16,7 @@ export default class Test extends Command {
                     description: "Added member.",
                     type: 6,
                     argument: "MEMBER",
-                    error: "The {{argument}} not {{type}}.",
+                    error: "The <\`{{argument}}\`> is not a {{type}}.",
                     required: true
                 }
             ]
