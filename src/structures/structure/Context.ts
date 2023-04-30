@@ -40,7 +40,7 @@ export class Context<T extends any[]> {
                     }
                 }
 
-                args = args.slice(args.length);
+                args = args.slice(this.args.length);
                 this.args.push(...args);
             }
             else {

@@ -150,7 +150,7 @@ export class CommandManager {
             if (Argument[args.argument] != args.type) {
                 throw new Error(`Type ${args.type} is not a ${args.argument}.`);
             }
-            
+
             const value = content[count];
 
             const messageErrorRegex = args.error.replaceAll(/\{[^\}\s]+\}}/g, (text) => {
@@ -261,7 +261,7 @@ export class CommandManager {
         }
 
         _arguments.push(...content.slice(count));
-
+        
         return {
             error,
             attachments,
