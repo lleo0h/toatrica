@@ -153,10 +153,19 @@ export class CommandManager {
         if (options) for (const args of options) {
             const value = content[count];
 
+            const messageErrorRegex = args.error.replaceAll(/\{[^\}\s]+\}}/g, (text) => {
+                const flags = {
+                    "{{argument}}": content[count] || "undefined", //current args array
+                    "{{type}}": args.argument.toLowerCase(), //current type arg
+                }
+                const search = flags[text as keyof typeof flags];
+                return search == undefined ? text : search;
+            }); 
+
             switch (args.type) {
                 case 3: { //string or undefined
                     if (typeof value != "string" && args.required == true) {
-                        error.messages.push(args.error);
+                        error.messages.push(messageErrorRegex);
                     }
 
                     _arguments.push(value);
@@ -171,7 +180,7 @@ export class CommandManager {
                     else if (value == "false") boolean = false;
 
                     if (typeof boolean != "boolean" && args.required == true) {
-                        error.messages.push(args.error);
+                        error.messages.push(messageErrorRegex);
                     }
                     
                     _arguments.push(boolean);
@@ -186,7 +195,7 @@ export class CommandManager {
                     else if (args.argument == "MEMBER") user = this.client.guilds.get(ctx.guild!.id)?.members.get(id);
 
                     if (user == undefined && args.required == true) {
-                        error.messages.push(args.error);
+                        error.messages.push(messageErrorRegex);
                     }
 
                     _arguments.push(user);
@@ -201,7 +210,7 @@ export class CommandManager {
                     else if (args.argument == "CHANNEL_TEXT") channel = this.client.getChannel(id);
 
                     if (args.required) {
-                        error.messages.push(args.error);
+                        error.messages.push(messageErrorRegex);
                     }
                     
                     _arguments.push(channel);
@@ -211,7 +220,7 @@ export class CommandManager {
                 case 8: { //role or undefined
                     const role = this.client.guilds.get(ctx.guild!.id)?.roles.get(value?.replace(/[<@&>]/g, ""));
                     if (role == undefined && args.required == true) {
-                        error.messages.push(args.error);
+                        error.messages.push(messageErrorRegex);
                     }
 
                     _arguments.push(role);
@@ -219,8 +228,8 @@ export class CommandManager {
                 }
 
                 case 10: { //number, NaN, or undefiend
-                    if (value == undefined && args.required == true) error.messages.push("O número não foi **definido**.");
-                    else if (isNaN(Number(value)) && args.required == true) error.messages.push(`O valor \`${value}\` não é um número.`);
+                    if (value == undefined && args.required == true) error.messages.push(messageErrorRegex);
+                    else if (isNaN(Number(value)) && args.required == true) error.messages.push(messageErrorRegex);
                     _arguments.push(Number(value));
                     break;
                 }
@@ -228,7 +237,7 @@ export class CommandManager {
                 case 11: { //attachment custom or undefined
                     const file = ctxArrFiles[countAttachment];
                     if (file == undefined && args.required == true) {
-                        error.messages.push(args.error);
+                        error.messages.push(messageErrorRegex);
                         break;
                     }
                     else if (file) {
@@ -247,14 +256,14 @@ export class CommandManager {
             count++;
         }
 
-        if (options) if (options[count-1].argument == "REASON" || options[count-1].argument == "ANY") {
+        if (options) if (options[count-1].argument == "ANY") {
             _arguments.push(...content.slice(count));
         }
 
         return {
             error,
             attachments,
-            arguments: _arguments
+            arguments: _arguments.length == 0 ? content : _arguments
         }
     }
 }

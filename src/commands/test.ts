@@ -9,11 +9,21 @@ export default class Test extends Command {
             aliases: ["t"],
             description: "Test command SLASH and PREFIX of Toatrica bot.",
             type: 1,
-            permissions: ["MODERATE_MEMBERS"]
+            permissions: ["MODERATE_MEMBERS"],
+            options: [
+                {
+                    name: "member",
+                    description: "Added member.",
+                    type: 6,
+                    argument: "MEMBER",
+                    error: "The {{argument}} not {{type}}.",
+                    required: true
+                }
+            ]
         });
     }
 
-    async run(ctx: Context<[String, Oceanic.Member]>) {
-        ctx.send("Test command.");
+    async run(ctx: Context<[Oceanic.Member]>) {
+        ctx.send(`test command | ${ctx.args[0].tag} (${ctx.args[0].id})`);
     }
 }
