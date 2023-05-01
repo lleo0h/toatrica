@@ -159,8 +159,7 @@ export class CommandManager {
                     "{{type}}": args.argument.toLowerCase(), //current type arg
                 } as Record<string, string | undefined>
                 
-                const search = flags[text];
-                return search == undefined ? text : search;
+                return flags[text] || text;
             });
 
             switch (args.type) {
@@ -265,7 +264,7 @@ export class CommandManager {
         return {
             error,
             attachments,
-            arguments: _arguments.length == 0 ? content : _arguments
+            arguments: _arguments ?? content
         }
     }
 }

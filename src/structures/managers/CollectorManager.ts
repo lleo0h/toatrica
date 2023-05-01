@@ -40,9 +40,9 @@ export class CollectorManager {
         if (dir == undefined) return;
 
         for (const file of fs.readdirSync(dir)) {
-            const event = await import(`${dir}/${file}`)
-            const Event = new event.default as Event;
-            const {name, once, run} = Event;
+            const Event = await import(`${dir}/${file}`);
+            const event = new Event.default as Event;
+            const {name, once, run} = event;
 
             this.set(name, {
                 identifier: name,
@@ -54,16 +54,15 @@ export class CollectorManager {
         return this;
     }
 
-    public set(event: keyof Oceanic.ClientEvents, options: SetOptions, callback: (...args: any) => unknown): void {
+    public set<K extends keyof Oceanic.ClientEvents>(event: K, options: SetOptions, callback: (client: Oceanic.Client, ...args: Oceanic.ClientEvents[K]) => unknown): void {
         const client = this.client;
 
         if (options.once == true) {
             this.client.once(event, (..._this) => {
-                if (options.filter && !options?.filter(..._this, this.client)) {
+                if (options.filter && !options?.filter(..._this)) {
                     return;
                 }
-                callback(..._this, this.client);
-                return;
+                callback(this.client, ..._this);
             });
         }
         else {
@@ -75,7 +74,7 @@ export class CollectorManager {
             function listener(..._this: any) {
                 let collected = 0;
 
-                if (options.filter && !options.filter(..._this, client)) {
+                if (options.filter && !options.filter(client, ..._this)) {
                     return;
                 }
 
@@ -88,7 +87,7 @@ export class CollectorManager {
                 }
                 
                 collected++;
-                callback(..._this, client);
+                callback(client, ..._this);
             }
 
             let timeout: NodeJS.Timeout | undefined;

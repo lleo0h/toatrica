@@ -9,7 +9,7 @@ export default class MessageCreate extends Event {
         });
     }
 
-    async run(message: Oceanic.Message, client: Client) {
+    async run(client: Client, message: Oceanic.Message) {
         client.command.run(message).catch((err) => {
             console.log(err);
         });

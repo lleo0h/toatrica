@@ -2,7 +2,7 @@ import {Attachment} from "../structures/structure/Context.js";
 import * as Oceanic from "oceanic.js";
 
 export async function bufferAttachmentToURL(attachment: Oceanic.Attachment): Promise<Attachment> {
-    const typeAttachments = {
+    const typeAttachments: Record<string, string> = {
         "504b0304": "zip",
         "526172211a07": "rar",
         "89504e470d0a1a0a": "png",
@@ -16,9 +16,9 @@ export async function bufferAttachmentToURL(attachment: Oceanic.Attachment): Pro
     const buffer = Buffer.from(new Uint8Array(await response.arrayBuffer()));
 
     let count = 0;
-    let type = undefined;
+    let type: string | undefined;
     for (const key of Object.keys(typeAttachments)) {
-        const hex = buffer.toString("hex").slice(0, key.length) as keyof typeof typeAttachments;
+        const hex = buffer.toString("hex").slice(0, key.length);
         if (hex == key) type = typeAttachments[hex];
         count++;
     }

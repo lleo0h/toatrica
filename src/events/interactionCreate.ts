@@ -9,7 +9,7 @@ export default class InteractionCreate extends Event {
         });
     }
 
-    async run(interaction: Oceanic.Interaction, client: Client) {
+    async run(client: Client, interaction: Oceanic.Interaction) {
         if (interaction instanceof Oceanic.CommandInteraction) {
             client.command.run(interaction).catch(err => {
                 console.log(err);
