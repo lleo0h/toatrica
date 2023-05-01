@@ -1,6 +1,6 @@
 import * as Oceanic from "oceanic.js";
 import fs from "fs";
-import {Command, CommandOptions} from "../structure/Command.js";
+import {Command, Argument, CommandOptions} from "../structure/Command.js";
 import {Context, Attachment, Response} from "../structure/Context.js";
 import {Client} from "../structure/Client.js";
 import {bufferAttachmentToURL} from "../../utils/bufferAttachmentToURL.js";
@@ -132,18 +132,6 @@ export class CommandManager {
 
         const error = { messages: [] as string[] }
 
-        const Argument = {
-            STRING: 3,
-            BOOLEAN: 5,
-            USER: 6,
-            MEMBER: 6,
-            CHANNEL_TEXT: 7,
-            CHANNEL_GUILD: 7,
-            ROLE: 8,
-            NUMBER: 10,
-            ATTACHMENT: 11,
-        }
-
         let count = 0;
 
         if (options) for (const args of options) {
@@ -159,7 +147,7 @@ export class CommandManager {
                     "{{type}}": args.argument.toLowerCase(), //current type arg
                 } as Record<string, string | undefined>
                 
-                return flags[text] || text;
+                return flags[text] ?? text;
             });
 
             switch (args.type) {

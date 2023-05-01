@@ -1,10 +1,20 @@
 import * as Oceanic from "oceanic.js";
 import {Context} from "./Context.js";
 
-export type Argument = "STRING" | "NUMBER" | "BOOLEAN" | "MEMBER" | "USER" | "CHANNEL_GUILD" | "CHANNEL_TEXT" | "ROLE" | "ATTACHMENT";
+export const Argument = {
+    STRING: 3,
+    BOOLEAN: 5,
+    USER: 6,
+    MEMBER: 6,
+    CHANNEL_TEXT: 7,
+    CHANNEL_GUILD: 7,
+    ROLE: 8,
+    NUMBER: 10,
+    ATTACHMENT: 11,
+}
 
 export type CommandOptions = Oceanic.ApplicationCommandOptions & {
-    argument: Argument;
+    argument: keyof typeof Argument;
     error: string;
 }
 
