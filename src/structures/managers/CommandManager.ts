@@ -27,7 +27,7 @@ export class CommandManager {
             const Command = await import(`../../commands/${file}`);
             const command = new Command.default as Command;
 
-            this.commands.set(command.name, command);
+            this.commands.set(command.name!, command);
 
             if (command.aliases) {
                 for (const alias of command.aliases) {

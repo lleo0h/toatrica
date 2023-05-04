@@ -1,0 +1,8 @@
+{
+    "commands": {
+        "test": {
+            "description": "Test command SLASH and PREFIX of Toatrica bot.",
+            "error_0": "The `{{argument}}` is not a {{type}}." 
+        }
+    }
+}

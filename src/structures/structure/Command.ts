@@ -19,7 +19,7 @@ export type CommandOptions = Oceanic.ApplicationCommandOptions & {
 }
 
 export class Command {
-    public name: string;
+    public name?: string;
     public description?: string;   
     public aliases?: string[];
     public options?: CommandOptions[];
@@ -27,17 +27,6 @@ export class Command {
     public disableSlash?: boolean;
     public disablePrefix?: boolean;
     public permissions?: Array<Oceanic.Constants.PermissionName>
-
-    constructor({name, aliases, description, options, type, disableSlash, disablePrefix, permissions}: Omit<Command, "run">) {
-        this.name = name;
-        this.aliases = aliases;
-        this.description = description;
-        this.options = options;
-        this.type = type;
-        this.disableSlash = disableSlash;
-        this.disablePrefix = disablePrefix;
-        this.permissions = permissions;
-    }
 
     async run(ctx: Context<any>): Promise<any>{};
 }

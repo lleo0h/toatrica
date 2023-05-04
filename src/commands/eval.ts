@@ -3,14 +3,10 @@ import {Command} from "../structures/structure/Command.js";
 import {Context} from "../structures/structure/Context.js";
 
 export default class Eval extends Command {
-    constructor() {
-        super({
-            name: "eval",
-            aliases: ["e"],
-            disableSlash: true,
-            type: 1
-        });
-    }
+    name = "eval";
+    aliases = ["e"];
+    disableSlash = true;
+    type = 1;
 
     async run(ctx: Context<[]>) {
         if (ctx.author.id != "468191831759388682") return;
