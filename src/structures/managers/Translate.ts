@@ -1,8 +1,12 @@
 import fs from "fs";
-import {__dir} from "../../utils/__dir.js";
+import {__dir} from "../../utils/constants.js";
+
+export type Locales = "pt" | "en";
+
+type TranslateObject = Record<string, object | Array<string | object>>
 
 export class Translate {
-    public translate: Record<string, object | Array<string>> = {}
+    public translate: TranslateObject  = {}
 
     constructor(path: string) {
         for (const file of fs.readdirSync(path+"/assets/locales")) {
@@ -11,10 +15,10 @@ export class Translate {
         }
     }
 
-    t(path: string, translate: "pt" | "en"): object | Array<string> | string | undefined {
-        let td = this.translate[translate] as Record<string, string | object | Array<string>>;
+    t(path: string, locales: Locales): object | Array<string> | string | undefined {
+        let td = this.translate[locales] as TranslateObject;
         for (const p of path.split(".")) {
-            td = td[p] as Record<string, object | string>;
+            td = td[p] as TranslateObject;
         }
         return td;
     }

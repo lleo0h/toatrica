@@ -15,6 +15,16 @@
                 "client": ".",
                 "member": "."
             }
+        },
+        "flags": {
+            "member": "membro",
+            "user": "usuário",
+            "string": "caracteres",
+            "role": "cargo",
+            "text_channel": "chat de texto",
+            "guild_channel": "chat de servidor",
+            "boolean": "booleano",
+            "attachment": "arquivo"
         }
     }
 }

@@ -1,7 +1,6 @@
-import { translate } from "../structures/managers/Translate.js";
+import * as Oceanic from "oceanic.js";
 import {Command, CommandOptions} from "../structures/structure/Command.js";
 import {Context} from "../structures/structure/Context.js";
-import * as Oceanic from "oceanic.js";
 
 export default class Test extends Command {
     name = "test";

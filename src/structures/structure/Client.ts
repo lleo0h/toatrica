@@ -2,7 +2,7 @@ import * as Oceanic from "oceanic.js";
 import {CollectorManager} from "../managers/CollectorManager.js";
 import {CommandManager} from "../managers/CommandManager.js";
 import {translate} from "../managers/Translate.js";
-import {__dir} from "../../utils/__dir.js";
+import {__dir} from "../../utils/constants.js";
 
 const Intents = Oceanic.Constants.Intents;
 

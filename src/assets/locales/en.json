@@ -15,6 +15,16 @@
                 "client": ".",
                 "member": "."
             }
+        },
+        "flags": {
+            "member": "member",
+            "user": "user",
+            "string": "string",
+            "role": "role",
+            "text_channel": "text channel",
+            "guild_channel": "guild channel",
+            "boolean": "boolean",
+            "attachment": "attachment"
         }
     }
 }

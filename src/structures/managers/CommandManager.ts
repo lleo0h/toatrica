@@ -5,6 +5,8 @@ import {Context, Attachment, Response} from "../structure/Context.js";
 import {Client} from "../structure/Client.js";
 import {bufferAttachmentToURL} from "../../utils/bufferAttachmentToURL.js";
 import {permissions_pt} from "../../utils/permissions.js";
+import {flags} from "../../utils/flags.js";
+import {flagsRegex} from "../../utils/constants.js";
 
 const prefix = "t/"; //defaults
 const locale = "pt";
@@ -60,6 +62,7 @@ export class CommandManager {
             if (command.permissions) {
                 const member_permissions = this.permissionHandler(ctx.member!.id, ctx, command.permissions);
                 const client_permissions = this.permissionHandler(ctx.client.user.id, ctx, command.permissions);
+                
                 const messages_permission = this.client.translate.t("handlers.commands.permissions", locale) as {
                     client: string;
                     member: string;
@@ -146,15 +149,17 @@ export class CommandManager {
 
             const value = content[count];
 
-            const translate = this.client.translate.t(options[count].error, locale) as string;
-            const messageErrorRegex = translate.replaceAll(/\{[^\}\s]+\}}/g, (text) => {
-                const flags = {
-                    "{{argument}}": content[count] || "undefined", //current args array
-                    "{{type}}": args.argument.toLowerCase(), //current type arg
-                } as Record<string, string | undefined>
-
-                return flags[text] ?? text;
-            });
+            const message = this.client.translate.t(options[count].error, locale) as string;
+            const messageErrorRegex = flags(message, flagsRegex, 
+                {
+                    key: "{{argument}}",
+                    value: content[count]
+                },
+                {
+                    key: "{{type}}",
+                    value: this.client.translate.t("handlers.flags."+args.argument.toLowerCase(), locale) as string
+                }
+            );
 
             switch (args.type) {
                 case 3: { //string or undefined
