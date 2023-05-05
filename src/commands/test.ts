@@ -1,3 +1,4 @@
+import { translate } from "../structures/managers/Translate.js";
 import {Command, CommandOptions} from "../structures/structure/Command.js";
 import {Context} from "../structures/structure/Context.js";
 import * as Oceanic from "oceanic.js";
@@ -14,12 +15,12 @@ export default class Test extends Command {
             description: "Added member.",
             type: 6,
             argument: "MEMBER",
-            error: "The \`{{argument}}\` is not a {{type}}.",
+            error: "commands.test.options.0.error",
             required: true
         }
     ];
 
-    async run(ctx: Context<[Oceanic.Member]>) {
+    async run(ctx: Context<any>) {
         ctx.send(`test | ${ctx.args[0].tag} (${ctx.args[0].id})`);
     }
 }

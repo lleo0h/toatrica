@@ -1,13 +1,13 @@
 import * as Oceanic from "oceanic.js";
 import {CollectorManager} from "../managers/CollectorManager.js";
 import {CommandManager} from "../managers/CommandManager.js";
-import {Translate} from "../managers/Translate.js";
+import {translate} from "../managers/Translate.js";
 import {__dir} from "../../utils/__dir.js";
 
 const Intents = Oceanic.Constants.Intents;
 
 export class Client extends Oceanic.Client {
-    public translate: Translate = new Translate(__dir);
+    public translate = translate;
     public collector: CollectorManager = new CollectorManager(this);
     public command: CommandManager = new CommandManager(this);
     public _eventsCount?: number;

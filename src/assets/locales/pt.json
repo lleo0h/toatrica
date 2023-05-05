@@ -1,10 +1,10 @@
 {
     "commands": {
         "test": {
-            "description": "Test command SLASH and PREFIX of Toatrica.",
+            "description": "Comando de teste SLASH e PREFIX da Toatrica.",
             "options": [
                 {
-                    "error": "The `{{argument}}` is not a `{{type}}`." 
+                    "error": "O `{{argument}}` não é um `{{type}}`."
                 }
             ]
         }

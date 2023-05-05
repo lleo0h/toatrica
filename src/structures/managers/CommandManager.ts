@@ -6,7 +6,8 @@ import {Client} from "../structure/Client.js";
 import {bufferAttachmentToURL} from "../../utils/bufferAttachmentToURL.js";
 import {permissions_pt} from "../../utils/permissions.js";
 
-const prefix = "t/";
+const prefix = "t/"; //defaults
+const locale = "pt";
 
 export class CommandManager {
     public commands: Map<string, Command>;
@@ -59,11 +60,15 @@ export class CommandManager {
             if (command.permissions) {
                 const member_permissions = this.permissionHandler(ctx.member!.id, ctx, command.permissions);
                 const client_permissions = this.permissionHandler(ctx.client.user.id, ctx, command.permissions);
+                const messages_permission = this.client.translate.t("handlers.commands.permissions", locale) as {
+                    client: string;
+                    member: string;
+                };
 
                 if (ctx instanceof Oceanic.Message) {
                     if (client_permissions.length) {
                         const message = await ctx.channel.createMessage({
-                            content: `Preciso ter ${client_permissions.length > 1 ? `as permissoões de ${client_permissions.reduce((acc, cur) => `\`${acc}\`, \`${cur}\``)}` : `a permissão de \`${client_permissions[0]}\` para usar executar esse comando`}.`,
+                            content: messages_permission.client,
                             messageReference: {messageID: ctx.id}
                         });
                         setTimeout(() => message.delete().catch(() => {}), 4500);
@@ -72,7 +77,7 @@ export class CommandManager {
 
                     if (member_permissions.length) {
                         const message = await ctx.channel.createMessage({
-                            content: `Você precisa ${member_permissions.length > 1 ? `das permissoões de ${member_permissions.reduce((acc, cur) => `\`${acc}\`, \`${cur}\``)}` : `da permissão de \`${member_permissions[0]}\` para usar esse comando`}.`,
+                            content: messages_permission.member,
                             messageReference: {messageID: ctx.id}
                         });
                         setTimeout(() => message.delete().catch(() => {}), 4500);
@@ -82,7 +87,7 @@ export class CommandManager {
                 else if (ctx instanceof Oceanic.CommandInteraction) {
                     if (client_permissions.length) {
                         ctx.createMessage({
-                            content: `Preciso ter ${client_permissions.length > 1 ? `as permissoões de ${client_permissions.reduce((acc, cur) => `\`${acc}\`, \`${cur}\``)}` : `a permissão de \`${client_permissions[0]}\` para usar executar esse comando`}.`,
+                            content: messages_permission.client,
                             flags: 64
                         });
                         return;
@@ -90,7 +95,7 @@ export class CommandManager {
 
                     if (member_permissions.length) {
                         ctx.createMessage({
-                            content: `Você precisa ${member_permissions.length > 1 ? `das permissoões de ${member_permissions.reduce((acc, cur) => `\`${acc}\`, \`${cur}\``)}` : `da permissão de \`${member_permissions[0]}\` para usar esse comando`}.`,
+                            content: messages_permission.member,
                             flags: 64
                         });
                         return;
@@ -141,12 +146,13 @@ export class CommandManager {
 
             const value = content[count];
 
-            const messageErrorRegex = args.error.replaceAll(/\{[^\}\s]+\}}/g, (text) => {
+            const translate = this.client.translate.t(options[count].error, locale) as string;
+            const messageErrorRegex = translate.replaceAll(/\{[^\}\s]+\}}/g, (text) => {
                 const flags = {
                     "{{argument}}": content[count] || "undefined", //current args array
                     "{{type}}": args.argument.toLowerCase(), //current type arg
                 } as Record<string, string | undefined>
-                
+
                 return flags[text] ?? text;
             });
 
