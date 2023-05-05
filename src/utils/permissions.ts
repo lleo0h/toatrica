@@ -1,4 +1,4 @@
-export const permissions_pt = {
+export const pt = {
     CREATE_EVENTS: "criar eventos",
     CREATE_GUILD_EXPRESSIONS: "criar expressões do servidor",
     USE_SOUNDBOARD: "usar painel de efeito sonoro",
@@ -48,7 +48,7 @@ export const permissions_pt = {
     VIEW_CREATOR_MONETIZATION_ANALYTICS: "ver analítica de monetizaçãodo criador"
 }
 
-export const permissions_en = {
+export const en = {
     CREATE_EVENTS: "create events",
     CREATE_GUILD_EXPRESSIONS: "create guild_expressions",
     USE_SOUNDBOARD: "use soundboard",
@@ -97,3 +97,5 @@ export const permissions_en = {
     MODERATE_MEMBERS: "moderate members",
     VIEW_CREATOR_MONETIZATION_ANALYTICS: "view creator_monetization_analytics"
 }
+
+export const permissions = {pt, en}

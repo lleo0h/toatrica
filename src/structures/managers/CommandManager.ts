@@ -4,9 +4,10 @@ import {Command, Argument, CommandOptions} from "../structure/Command.js";
 import {Context, Attachment, Response} from "../structure/Context.js";
 import {Client} from "../structure/Client.js";
 import {bufferAttachmentToURL} from "../../utils/bufferAttachmentToURL.js";
-import {permissions_pt} from "../../utils/permissions.js";
+import {permissions as permissionLocales} from "../../utils/permissions.js";
 import {flags} from "../../utils/flags.js";
 import {flagsRegex} from "../../utils/constants.js";
+import {Locales} from "./Translate.js";
 
 const prefix = "t/"; //defaults
 const locale = "pt";
@@ -60,18 +61,21 @@ export class CommandManager {
 
         if (command) {
             if (command.permissions) {
-                const member_permissions = this.permissionHandler(ctx.member!.id, ctx, command.permissions);
-                const client_permissions = this.permissionHandler(ctx.client.user.id, ctx, command.permissions);
+                const member_permissions = this.permissionHandler(ctx.member!.id, ctx, command.permissions, locale);
+                const client_permissions = this.permissionHandler(ctx.client.user.id, ctx, command.permissions, locale);
                 
                 const messages_permission = this.client.translate.t("handlers.commands.permissions", locale) as {
                     client: string;
                     member: string;
                 };
 
+                const content_client = flags(messages_permission.client, flagsRegex, {key: "{{permissions}}", value: client_permissions.reduce((acc, cur) => `\`${acc}\`, \`${cur}\``, "").slice(3)});
+                const content_member = flags(messages_permission.member, flagsRegex, {key: "{{permissions}}", value: client_permissions.reduce((acc, cur) => `\`${acc}\`, \`${cur}\``, "").slice(3)});
+
                 if (ctx instanceof Oceanic.Message) {
                     if (client_permissions.length) {
                         const message = await ctx.channel.createMessage({
-                            content: messages_permission.client,
+                            content: content_client,
                             messageReference: {messageID: ctx.id}
                         });
                         setTimeout(() => message.delete().catch(() => {}), 4500);
@@ -80,7 +84,7 @@ export class CommandManager {
 
                     if (member_permissions.length) {
                         const message = await ctx.channel.createMessage({
-                            content: messages_permission.member,
+                            content: content_member,
                             messageReference: {messageID: ctx.id}
                         });
                         setTimeout(() => message.delete().catch(() => {}), 4500);
@@ -90,7 +94,7 @@ export class CommandManager {
                 else if (ctx instanceof Oceanic.CommandInteraction) {
                     if (client_permissions.length) {
                         ctx.createMessage({
-                            content: messages_permission.client,
+                            content: content_client,
                             flags: 64
                         });
                         return;
@@ -98,7 +102,7 @@ export class CommandManager {
 
                     if (member_permissions.length) {
                         ctx.createMessage({
-                            content: messages_permission.member,
+                            content: content_member,
                             flags: 64
                         });
                         return;
@@ -120,14 +124,14 @@ export class CommandManager {
         }
     }
 
-    private permissionHandler(id: string, ctx: Response, permissions: Oceanic.PermissionName[]) {
+    private permissionHandler(id: string, ctx: Response, permissions: Oceanic.PermissionName[], locale: Locales) {
         const channel = ctx.client.getChannel(ctx.channel!.id) as Oceanic.TextableChannel;
         const member = ctx.guild!.members.get(id)!;
 
         const arr: string[] = [];
         for (const permission of permissions) {
             if (!channel.permissionsOf(member.id).has(permission)) {
-                arr.push(permissions_pt[permission]);
+                arr.push(permissionLocales[locale][permission]);
             }
         }
 

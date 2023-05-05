@@ -12,8 +12,8 @@
     "handlers": {
         "commands": {
             "permissions": {
-                "client": ".",
-                "member": "."
+                "client": "Eu preciso ter as permissões de {{permissions}} para executar esse comando.",
+                "member": "Você precisa das permissões de {{permissions}} para usar esse comando."
             }
         },
         "flags": {
