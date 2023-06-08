@@ -63,41 +63,18 @@ export class Context<T extends any[]> {
     }
 
     public async send(content: string | Oceanic.CreateMessageOptions): Promise<Oceanic.Message> {
-        if (typeof content == "object") {
-            const result: Oceanic.CreateMessageOptions = {
-                content: content?.content,
-                embeds: content?.embeds,
-                files: content?.files == undefined ? [] : content.files,
-                components: content?.components
+        if (typeof content == "string") content = {content}
+
+        if (this.response instanceof Oceanic.CommandInteraction) {
+            if (this.response.acknowledged) {
+                return this.response.createFollowup(content);
             }
-    
-            if (this.response instanceof Oceanic.CommandInteraction) {
-                result.flags = content?.flags;
-    
-                if (this.response.acknowledged) {
-                    return this.response.createFollowup(result);
-                }
-                
-                this.response.createMessage(result);
-                return this.response.getOriginal();
-            }
-            else {
-                result.messageReference = {messageID: this.response.id}
-                return this.response.channel!.createMessage(result);
-            }
+            
+            this.response.createMessage(content);
+            return this.response.getOriginal(); 
         }
         else {
-            if (this.response instanceof Oceanic.CommandInteraction) {
-                if (this.response.acknowledged) {
-                    return this.response.createFollowup({content});
-                }
-                
-                this.response.createMessage({content});
-                return this.response.getOriginal();
-            }
-            else {
-                return this.response.channel!.createMessage({content, messageReference: {messageID: this.response.id}});
-            }
+            return this.response.channel!.createMessage({...content, messageReference: {messageID: this.response.id}});
         }
     }
 }
